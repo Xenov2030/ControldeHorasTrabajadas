@@ -99,6 +99,7 @@ Vercel utiliza Next.js en la raíz del repositorio. La configuración de la base
 - Quincenas con cierre configurable (1–27 y último día del mes), semanas de lunes a domingo y meses completos. Fechas de cobro con desplazamiento de mes y ajuste al último día si no existe el día configurado.
 - Condiciones de pago con fecha de vigencia para aumentos y cambios de modalidad. Los importes previos usan la condición vigente en su fecha.
 - Registro manual de cobros, separado de los ingresos estimados.
+- Historial manual de sueldos de períodos anteriores en Aguinaldo: selector de año y semestre, navegación entre semestres, tabla de todos los meses guardados y edición de cada mes. Base bruta y extras se cargan separadas por trabajo, sin crear jornadas ni cobros.
 - Estimación manual de aguinaldo sobre la mitad de la mayor remuneración mensual computable del semestre, con desglose de base y extras del mismo mes. Proporción por fecha de ingreso, si se informó. Se indica cuántos meses se cargaron.
 - Recordatorios dentro de la página tras la salida pactada, con demora y repetición configurables. Requieren una entrada activa y la página abierta; nunca cierran automáticamente una jornada.
 - Exportación CSV y copia/restauración completa en JSON. Migración del almacenamiento de la primera versión sin borrar el original.

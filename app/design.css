@@ -3518,3 +3518,15 @@ html[data-theme="dark"] .brand-mark--auto .brand-mark-dark,
 .sidebar > * {
   flex-shrink: 0;
 }
+
+.sac-period-navigation {
+  padding: 0 24px 18px;
+  flex-wrap: wrap;
+}
+.salary-records {
+  margin-top: 24px;
+}
+.salary-records table th,
+.salary-records table td {
+  white-space: nowrap;
+}
