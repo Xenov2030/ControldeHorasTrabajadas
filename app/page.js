@@ -953,7 +953,9 @@ function WorkspaceApp({ cloud = null }) {
       state={state}
       disabled={storageBlocked || hasModal}
       onSwitch={(id) => changeJob(switchJob(state, id))}
-      onAdd={(name) => changeJob(addJob(state, name, crypto.randomUUID()))}
+      onAdd={(name, currency) =>
+        changeJob(addJob(state, name, crypto.randomUUID(), currency))
+      }
       onRename={(name) => commit(renameJob(state, name))}
     />
   );
@@ -1039,6 +1041,8 @@ function WorkspaceApp({ cloud = null }) {
             "Justificada",
             "Paga",
             "Descuento",
+            "Trabajo",
+            "Moneda",
           ],
           ...selected.map((e) => [
             e.date,
@@ -1051,11 +1055,13 @@ function WorkspaceApp({ cloud = null }) {
             e.type === "absence" ? (e.absenceJustified ? "Sí" : "No") : "",
             e.type === "absence" ? (e.absencePaid ? "Sí" : "No") : "",
             e.deductionAmount ?? "",
+            state.jobName || "Mi trabajo",
+            currencyFor(state.profile),
           ]),
         ]
           .map((row) => row.map(cell).join(";"))
           .join("\r\n"),
-      `jornadas-${periodStart}-${periodEnd}.csv`,
+      `jornadas-${periodStart}-${periodEnd}-${currencyFor(state.profile)}.csv`,
       "text/csv;charset=utf-8",
     );
   }

@@ -71,6 +71,10 @@ export function ProfileFields({ value, onChange, locationLocked = false }) {
           ))}
         </select>
       </label>
+      <p className="field-help wide">
+        Tu país y zona horaria corresponden a tu ubicación. Podés trabajar para
+        un cliente de otro país y elegir su moneda de pago por separado.
+      </p>
       <label>
         {selected.regionLabel}
         <select
@@ -106,7 +110,7 @@ export function ProfileFields({ value, onChange, locationLocked = false }) {
         <small>Confirmala si tu país tiene más de una zona.</small>
       </label>
       <label>
-        Moneda de registro
+        Moneda de este trabajo
         <select
           aria-label="Moneda de registro"
           value={currencyFor(value)}
@@ -122,7 +126,8 @@ export function ProfileFields({ value, onChange, locationLocked = false }) {
         </select>
         <small>
           Moneda habitual de {selected.name}: {selected.currency}. Podés elegir
-          otra; no realizamos conversiones de dinero.
+          otra, como USD aunque vivas en Argentina. Cada trabajo conserva su
+          propia moneda; no realizamos conversiones de dinero.
         </small>
       </label>
       {locationLocked && (

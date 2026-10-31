@@ -56,3 +56,36 @@ test("backups refuse duplicate, nested or invalid jobs and enforce the beta limi
   assert.equal(listJobs(many).length, 10);
   assert.throws(() => addJob(many, "Trabajo 11", "job-11"));
 });
+
+test("jobs in Argentina can use ARS and USD independently without converting balances", () => {
+  const pesos = renameJob(createWorkspace(), "Empleo local");
+  pesos.configured = true;
+  pesos.compensation[0].amount = 4000;
+  pesos.payments = [
+    {
+      id: "ars",
+      date: "2026-10-20",
+      start: "2026-10-01",
+      end: "2026-10-15",
+      amount: 500000,
+    },
+  ];
+  pesos.sac = [{ month: "2026-10", base: 1000000, extras: 100000 }];
+  const dollars = addJob(pesos, "Cliente exterior", "usd-job", "USD");
+  assert.equal(dollars.profile.country, "AR");
+  assert.equal(dollars.profile.currency, "USD");
+  dollars.compensation[0].amount = 20;
+  dollars.payments = [{ ...pesos.payments[0], id: "usd", amount: 1600 }];
+  dollars.sac = [{ month: "2026-10", base: 1600, extras: 200 }];
+  const restored = cloudPayload(JSON.parse(JSON.stringify(dollars)));
+  const local = switchJob(restored, "primary");
+  assert.equal(local.profile.currency, "ARS");
+  assert.equal(local.payments[0].amount, 500000);
+  assert.equal(local.compensation[0].amount, 4000);
+  assert.equal(local.sac[0].base, 1000000);
+  const foreign = switchJob(local, "usd-job");
+  assert.equal(foreign.profile.currency, "USD");
+  assert.equal(foreign.payments[0].amount, 1600);
+  assert.equal(foreign.sac[0].base, 1600);
+  assert.throws(() => addJob(local, "Invalid", "invalid", "XYZ"));
+});

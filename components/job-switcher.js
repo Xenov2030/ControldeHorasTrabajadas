@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { CURRENCIES, currencyFor, currencyName } from "../lib/locations.mjs";
 import { jobId, jobName, listJobs, MAX_JOBS } from "../lib/jobs.mjs";
 
 export default function JobSwitcher({
@@ -11,7 +12,8 @@ export default function JobSwitcher({
 }) {
   const [mode, setMode] = useState(null),
     [name, setName] = useState(""),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [currency, setCurrency] = useState(currencyFor(state.profile));
   const jobs = listJobs(state);
   function run(action) {
     try {
@@ -35,7 +37,7 @@ export default function JobSwitcher({
           >
             {jobs.map((job) => (
               <option key={jobId(job)} value={jobId(job)}>
-                {jobName(job)}
+                {jobName(job)} · {currencyFor(job.profile)}
                 {job.activeSession ? " · Entrada activa" : ""}
               </option>
             ))}
@@ -57,6 +59,7 @@ export default function JobSwitcher({
           disabled={disabled || jobs.length >= MAX_JOBS}
           onClick={() => {
             setName("");
+            setCurrency(currencyFor(state.profile));
             setMode("add");
             setError("");
           }}
@@ -65,8 +68,10 @@ export default function JobSwitcher({
         </button>
       </div>
       <p>
-        Horarios, jornadas y cobros separados por trabajo. Los resúmenes y
-        recordatorios corresponden al trabajo seleccionado.
+        Cada trabajo tiene su moneda: por ejemplo, ARS para un empleo local y
+        USD para clientes del exterior. Los importes no se suman entre monedas
+        ni se convierten automáticamente. Los resúmenes y recordatorios
+        corresponden al trabajo seleccionado.
       </p>
       {jobs.some((job) => jobId(job) !== jobId(state) && job.activeSession) && (
         <p role="status">
@@ -79,7 +84,9 @@ export default function JobSwitcher({
           className="job-name-form"
           onSubmit={(e) => {
             e.preventDefault();
-            run(() => (mode === "add" ? onAdd(name) : onRename(name)));
+            run(() =>
+              mode === "add" ? onAdd(name, currency) : onRename(name),
+            );
           }}
         >
           <label>
@@ -93,6 +100,22 @@ export default function JobSwitcher({
               placeholder="Ej.: Taller · Turno mañana"
             />
           </label>
+          {mode === "add" && (
+            <label>
+              Moneda del nuevo trabajo
+              <select
+                aria-label="Moneda del nuevo trabajo"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+              >
+                {CURRENCIES.map((code) => (
+                  <option key={code} value={code}>
+                    {code} · {currencyName(code)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <button className="primary" disabled={disabled} type="submit">
             {mode === "add" ? "Crear trabajo" : "Guardar nombre"}
           </button>
