@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { getSupabase } from "../../../lib/supabase-client";
-import Icon from "../../../components/icon";
+import BrandLogo from "../../../components/brand-logo";
 export default function Callback() {
   const [error, setError] = useState(""),
     started = useRef(false);
@@ -26,8 +26,7 @@ export default function Callback() {
   }, []);
   return (
     <main className="loading">
-      <Icon name="clock" size={35} />
-      <strong>jornadapp.</strong>
+      <BrandLogo />
       {error ? (
         <>
           <p role="alert">{error}</p>

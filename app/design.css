@@ -3463,3 +3463,53 @@ select option {
 .employment-fields > p {
   margin: 0 0 18px;
 }
+
+/* Shared logo: the sidebar and introduction always have a dark background. */
+.brand-mark {
+  display: block;
+  width: 260px;
+  max-width: 100%;
+  flex: 0 1 auto;
+  line-height: 0;
+  letter-spacing: normal;
+}
+.brand-mark img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.brand-mark .brand-mark-dark {
+  display: none;
+}
+html[data-theme="dark"] .brand-mark--auto .brand-mark-light,
+.brand-mark--dark .brand-mark-light {
+  display: none;
+}
+html[data-theme="dark"] .brand-mark--auto .brand-mark-dark,
+.brand-mark--dark .brand-mark-dark {
+  display: block;
+}
+.sidebar .brand-mark {
+  width: 100%;
+}
+.account-story .brand,
+.setup-intro .brand {
+  width: 340px;
+  max-width: 100%;
+}
+.account-story .brand-mark,
+.setup-intro .brand-mark {
+  width: 340px;
+}
+.mobile-wordmark .brand-mark {
+  width: 190px;
+  margin: 0;
+}
+.loading > .brand-mark {
+  width: 300px;
+}
+@media (max-width: 380px) {
+  .mobile-wordmark .brand-mark {
+    width: 160px;
+  }
+}

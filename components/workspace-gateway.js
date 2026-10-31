@@ -15,6 +15,7 @@ import {
 } from "../lib/cloud-sync.mjs";
 import { createWorkspace, migrateLegacy } from "../lib/workspace.mjs";
 import CreatorCredit from "./creator-credit";
+import BrandLogo from "./brand-logo";
 import Icon from "./icon";
 
 function download(value, name) {
@@ -30,8 +31,7 @@ function download(value, name) {
 function Loading() {
   return (
     <div className="loading">
-      <Icon name="clock" size={34} />
-      <strong>jornadapp.</strong>
+      <BrandLogo />
       <p>Abriendo tu espacio personal…</p>
     </div>
   );
@@ -41,8 +41,7 @@ function AccountFrame({ children }) {
     <main className="account-screen">
       <div className="account-story">
         <a className="brand" href="/">
-          <Icon name="clock" size={32} />
-          jornadapp<span>.</span>
+          <BrandLogo tone="dark" />
         </a>
         <span className="eyebrow">TU TIEMPO TE ACOMPAÑA</span>
         <h1>

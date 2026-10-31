@@ -3,7 +3,8 @@ import "@fontsource-variable/manrope";
 import "./globals.css";
 import "./design.css";
 export const metadata = {
-  title: "Jornadapp · Tus horas, claras",
+  title: "JornadApp · Tu tiempo bien contado",
+  icons: { apple: "/icon.png" },
   description:
     "Registrá tu jornada, calculá tus horas extra y organizá tus cobros. Hecho para tu forma de trabajar.",
 };

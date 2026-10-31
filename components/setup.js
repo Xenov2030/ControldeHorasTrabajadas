@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { DAYS, PAY_MODES, scheduleHours } from "../lib/workspace.mjs";
+import BrandLogo from "./brand-logo";
 import Icon from "./icon";
 import DecimalInput from "./decimal-input";
 import EmploymentFields from "./employment-fields";
@@ -630,7 +631,7 @@ export default function Setup({
     <div className="setup-shell">
       <div className="setup-intro">
         <a className="brand" href="/">
-          <Icon name="clock" size={32} /> jornadapp<span>.</span>
+          <BrandLogo tone="dark" />
         </a>
         <span className="eyebrow">TU TIEMPO TIENE VALOR</span>
         <h1>

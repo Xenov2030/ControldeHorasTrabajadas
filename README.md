@@ -1,4 +1,6 @@
-# Jornadapp · Control de horas trabajadas
+# JornadApp · Tu tiempo bien contado
+
+![Logo de JornadApp](public/brand/jornadapp-light.png)
 
 Jornadapp ayuda a registrar el tiempo trabajado y entender cuánto se espera cobrar. Está pensada para trabajadores que necesitan llevar su propio control de jornadas, horas extra, faltas y pagos desde el celular o la computadora.
 
@@ -76,6 +78,8 @@ npm start
 Vercel utiliza Next.js en la raíz del repositorio. La configuración de la base de datos y del acceso con cuentas se documenta en [docs/BETA.md](docs/BETA.md).
 
 ## Funciones implementadas
+
+- Logo JornadApp con el lema «Tu tiempo bien contado», variantes para fondos claros y oscuros, e ícono de reloj en la pestaña.
 
 - Monotributo para Argentina: categorías A–K, cuota mensual opcional en ARS y fecha de vigencia. La cuota se informa por separado, sin descontarla automáticamente de sueldos ni duplicarla por trabajo o quincena. No se infieren categorías, topes de facturación ni importes de ARCA.
 - Condición laboral por trabajo y fecha de vigencia: registrado, no registrado o mixto. Permite indicar importes brutos o netos y un porcentaje manual de aportes/retenciones sobre la parte registrada, con opción de excluir las horas extra. Los importes netos no se descuentan otra vez. El resumen y los cobros muestran el importe antes de aportes, los descuentos configurados y el monto estimado a cobrar. Las condiciones anteriores sin configurar conservan sus importes.

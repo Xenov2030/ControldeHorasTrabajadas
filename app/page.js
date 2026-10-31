@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import BrandLogo from "../components/brand-logo";
 import Icon from "../components/icon";
 import CreatorCredit from "../components/creator-credit";
 import WorkspaceGateway from "../components/workspace-gateway";
@@ -966,8 +967,7 @@ function WorkspaceApp({ cloud = null }) {
   if (!state || !now)
     return (
       <div className="loading">
-        <Icon name="clock" size={36} />
-        <strong>jornadapp.</strong>
+        <BrandLogo />
         <p>Preparando tu espacio…</p>
       </div>
     );
@@ -1153,9 +1153,8 @@ function WorkspaceApp({ cloud = null }) {
     <div className="shell">
       <aside className="sidebar">
         <a className="brand" href="/">
-          <Icon name="clock" size={30} /> jornadapp<span>.</span>
+          <BrandLogo tone="dark" />
         </a>
-        <div className="brand-caption">TU TIEMPO, BIEN CONTADO.</div>
         <div className="workspace-label">TU ESPACIO</div>
         <div className="workspace-card">
           <span className="avatar">
@@ -1212,8 +1211,7 @@ function WorkspaceApp({ cloud = null }) {
         {jobSwitcher}
         <header className="topbar">
           <a href="/" className="mobile-wordmark">
-            <Icon name="clock" size={22} />
-            jornadapp<span>.</span>
+            <BrandLogo />
           </a>
           <span className="breadcrumb">
             Mi espacio <span className="slash">/</span>
