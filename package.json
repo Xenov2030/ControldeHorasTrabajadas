@@ -30,5 +30,6 @@
     "@playwright/test": "^1.64.1",
     "country-region-data": "^4.1.0",
     "prettier": "^3.9.10"
-  }
+  },
+  "license": "UNLICENSED"
 }

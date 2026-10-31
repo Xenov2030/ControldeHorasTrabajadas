@@ -3628,3 +3628,22 @@ html[data-theme="dark"] .brand-mark--auto .brand-mark-dark,
     flex-wrap: wrap;
   }
 }
+
+.creator-credit {
+  max-width: 100%;
+  border-radius: 18px;
+}
+.creator-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.creator-copy small {
+  display: block;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.creator-portfolio {
+  font-size: 10px;
+  color: var(--accent);
+}

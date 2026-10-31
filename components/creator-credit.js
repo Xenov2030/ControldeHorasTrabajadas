@@ -13,8 +13,17 @@ export default function CreatorCredit() {
       <span className="creator-mark" aria-hidden="true">
         ✦
       </span>
-      <span>
-        Hecho por <strong>{CREATOR.name}</strong>
+      <span className="creator-copy">
+        <span>
+          JornadApp es propiedad de <strong>{CREATOR.name}</strong>.
+        </span>
+        <small>
+          © {CREATOR.copyrightYear} {CREATOR.name}. Todos los derechos
+          reservados.
+        </small>
+        <span className="creator-portfolio">
+          Creado por {CREATOR.name} · Ver portfolio
+        </span>
       </span>
       <Icon name="arrow" size={13} />
     </a>

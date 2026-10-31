@@ -138,6 +138,12 @@ La aplicación no sobrescribe datos que no puede validar. El almacenamiento loca
 
 La pantalla Premium informa qué funciones están previstas y no activa pagos ni simula integraciones.
 
-## Crédito del creador
+## Titularidad y derechos de autor
 
-El componente `CreatorCredit` está preparado para mostrar una firma discreta con enlace al portfolio en el pie del panel y en la configuración inicial. Su identidad pública se define en `lib/branding.mjs`. La firma actual es «Hecho por Nicolas Aguirres» y enlaza a https://nicolasaguirrescode.com/. El enlace utiliza HTTPS y abre el portfolio en una pestaña nueva.
+**JornadApp es propiedad de Nicolas Aguirres.**
+
+© 2026 Nicolas Aguirres. Todos los derechos reservados. El código original, el diseño, la documentación y los recursos propios del proyecto son de uso reservado; no se concede una licencia general de reutilización. Consultá [LICENSE](LICENSE).
+
+Las dependencias y los recursos de terceros conservan sus respectivas licencias y atribuciones, incluido el catálogo geográfico documentado en [data/README.md](data/README.md). Este aviso no atribuye al titular los derechos sobre esos componentes ni sobre los datos personales de los usuarios.
+
+La aplicación muestra el aviso de propiedad y derechos en el ingreso, la configuración inicial y el pie del panel, junto al enlace al [portfolio de Nicolas Aguirres](https://nicolasaguirrescode.com/). La identidad pública se define en `lib/branding.mjs`.
