@@ -385,3 +385,76 @@ test("pantalla de ingreso no muestra datos sin sesión y genera el acceso de Goo
     "http://127.0.0.1:3004/auth/callback",
   );
 });
+
+test("varios trabajos se sincronizan completos y mantienen registros separados", async ({
+  page,
+  context,
+  browser,
+}) => {
+  const { createWorkspace } = await import("../../lib/workspace.mjs");
+  const { addJob } = await import("../../lib/jobs.mjs");
+  const primary = createWorkspace();
+  primary.configured = true;
+  primary.entries = [
+    {
+      id: "factory",
+      date: "2026-10-08",
+      hours: 8,
+      type: "work",
+      note: "Solo fábrica",
+      quantity: 0,
+    },
+  ];
+  const second = addJob(primary, "Repartos", "second");
+  second.configured = true;
+  const rows = new Map([
+    [
+      A,
+      {
+        owner_id: A,
+        payload: second,
+        revision: 1,
+        updated_at: new Date().toISOString(),
+      },
+    ],
+  ]);
+  const backend = await fixture(context, { rows });
+  await page.goto("/");
+  await page
+    .getByRole("heading", { name: "Tu esfuerzo, en números." })
+    .waitFor();
+  await addEntry(page);
+  await saved(page);
+  assert.equal(backend.rows.get(A).payload.entries.length, 1);
+  assert.equal(
+    backend.rows.get(A).payload.otherJobs[0].entries[0].note,
+    "Solo fábrica",
+  );
+  await page
+    .getByLabel("Trabajo actual", { exact: true })
+    .selectOption("primary");
+  await saved(page);
+  assert.equal(backend.rows.get(A).payload.entries[0].note, "Solo fábrica");
+  assert.equal(backend.rows.get(A).payload.otherJobs[0].jobName, "Repartos");
+  const fresh = await browser.newContext();
+  try {
+    await fixture(fresh, { rows });
+    const other = await fresh.newPage();
+    await other.goto("http://127.0.0.1:3004/");
+    await other
+      .getByRole("heading", { name: "Tu esfuerzo, en números." })
+      .waitFor();
+    await other
+      .getByLabel("Trabajo actual", { exact: true })
+      .selectOption("second");
+    await saved(other);
+    assert.equal(rows.get(A).payload.jobName, "Repartos");
+    assert.equal(rows.get(A).payload.entries[0].date, "2026-10-09");
+    assert.equal(
+      rows.get(A).payload.otherJobs[0].entries[0].note,
+      "Solo fábrica",
+    );
+  } finally {
+    await fresh.close();
+  }
+});

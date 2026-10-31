@@ -27,7 +27,7 @@ export default function Callback() {
   return (
     <main className="loading">
       <Icon name="clock" size={35} />
-      <strong>jornada.</strong>
+      <strong>jornadapp.</strong>
       {error ? (
         <>
           <p role="alert">{error}</p>

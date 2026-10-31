@@ -3,7 +3,7 @@ import "@fontsource-variable/manrope";
 import "./globals.css";
 import "./design.css";
 export const metadata = {
-  title: "Jornada · Tus horas, claras",
+  title: "Jornadapp · Tus horas, claras",
   description:
     "Registrá tu jornada, calculá tus horas extra y organizá tus cobros. Hecho para tu forma de trabajar.",
 };

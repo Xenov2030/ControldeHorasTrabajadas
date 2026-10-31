@@ -623,7 +623,7 @@ export default function Setup({
     <div className="setup-shell">
       <div className="setup-intro">
         <a className="brand" href="/">
-          <Icon name="clock" size={32} /> jornada<span>.</span>
+          <Icon name="clock" size={32} /> jornadapp<span>.</span>
         </a>
         <span className="eyebrow">TU TIEMPO TIENE VALOR</span>
         <h1>

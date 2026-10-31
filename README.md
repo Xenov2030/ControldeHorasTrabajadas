@@ -1,6 +1,6 @@
-# Jornada · Control de horas trabajadas
+# Jornadapp · Control de horas trabajadas
 
-Jornada ayuda a registrar el tiempo trabajado y entender cuánto se espera cobrar. Está pensada para trabajadores que necesitan llevar su propio control de jornadas, horas extra, faltas y pagos desde el celular o la computadora.
+Jornadapp ayuda a registrar el tiempo trabajado y entender cuánto se espera cobrar. Está pensada para trabajadores que necesitan llevar su propio control de jornadas, horas extra, faltas y pagos desde el celular o la computadora.
 
 **Sitio:** https://controldehorastrabajadas.vercel.app/
 
@@ -21,9 +21,9 @@ La propuesta es que cada persona pueda comparar sus registros de trabajo con lo 
 
 ## Material para crear contenido
 
-**Descripción breve:** Jornada es una aplicación web para registrar horas trabajadas, estimar ingresos y llevar un control personal de jornadas y cobros.
+**Descripción breve:** Jornadapp es una aplicación web para registrar horas trabajadas, estimar ingresos y llevar un control personal de jornadas y cobros.
 
-**Texto de presentación:** «¿Trabajás por hora pero cobrás por quincena? Con Jornada podés configurar tus horarios, registrar tus entradas y salidas y consultar una estimación de lo que te corresponde cobrar. También podés llevar tus horas extra, faltas y pagos en una interfaz adaptada al celular y la computadora».
+**Texto de presentación:** «¿Trabajás por hora pero cobrás por quincena? Con Jornadapp podés configurar tus horarios, registrar tus entradas y salidas y consultar una estimación de lo que te corresponde cobrar. También podés llevar tus horas extra, faltas y pagos en una interfaz adaptada al celular y la computadora».
 
 Ideas para publicaciones y demostraciones:
 
@@ -76,6 +76,8 @@ npm start
 Vercel utiliza Next.js en la raíz del repositorio. La configuración de la base de datos y del acceso con cuentas se documenta en [docs/BETA.md](docs/BETA.md).
 
 ## Funciones implementadas
+
+- Hasta diez trabajos por cuenta, con nombre, horarios, sueldos, jornadas, faltas, cobros y SAC separados. Selector para cambiar de trabajo y renombrarlo; los datos anteriores se conservan como «Mi trabajo». Los resúmenes, CSV y recordatorios corresponden al trabajo seleccionado. La copia JSON y la sincronización incluyen todos los trabajos. No hay todavía un resumen combinado.
 
 - Catálogo local de 23 países y Puerto Rico como territorio, con 507 divisiones administrativas. Incluye los 20 países de América Latina y cobertura regional adicional para Belice, Guyana y Surinam. Cada país muestra provincia, estado, departamento, región o municipio según corresponda. Datos y licencia: [data/README.md](data/README.md).
 - Zona horaria IANA configurable por país: reloj, fecha de registro y recordatorios usan la selección; se evita asumir UTC-3 para toda Latinoamérica.

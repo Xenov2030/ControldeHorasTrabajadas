@@ -14,13 +14,13 @@ En Supabase → SQL Editor, ejecutá el contenido completo de:
 
 La migración es repetible y crea:
 
-- `public.workspaces`: un documento JSONB por cuenta, con perfil, configuración, jornadas, vacaciones, faltas, cobros y remuneraciones del SAC. Límite: 2 MB por documento.
+- `public.workspaces`: un documento JSONB por cuenta, con perfil, configuración, jornadas, vacaciones, faltas, cobros y remuneraciones del SAC de todos los trabajos personales. Límite: 2 MB por documento.
 - Referencia a `auth.users` para que los datos se eliminen si se borra la cuenta desde la administración de Supabase.
 - RLS: una cuenta autenticada solo puede leer su propia fila.
 - `save_workspace`: escritura atómica que comprueba el usuario y la revisión anterior. No permite sobreescribir una revisión más nueva ni escribir para otra cuenta.
 - Acceso anónimo y escrituras directas a la tabla deshabilitados. La aplicación no usa claves `service_role`.
 
-En esta beta se guarda un documento completo por cuenta. No hay todavía espacios de empresa, administración de empleados ni combinación automática de ediciones simultáneas. Si dos dispositivos editan al mismo tiempo, se conserva la copia pendiente y se pide descargarla antes de cargar la versión remota.
+En esta beta se guarda un documento completo por cuenta. Cada documento incluye hasta diez trabajos personales con datos independientes. No hay todavía espacios de empresa, administración de empleados ni combinación automática de ediciones simultáneas. Si dos dispositivos editan al mismo tiempo, se conserva la copia pendiente y se pide descargarla antes de cargar la versión remota.
 
 ## 3. Configurar los ingresos
 

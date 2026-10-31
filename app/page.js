@@ -18,6 +18,8 @@ import {
 import DecimalInput from "../components/decimal-input";
 import { parseDecimal } from "../lib/decimal.mjs";
 import Setup from "../components/setup";
+import JobSwitcher from "../components/job-switcher";
+import { addJob, switchJob, renameJob, jobId } from "../lib/jobs.mjs";
 import Settings from "../components/settings";
 import Sac from "../components/sac";
 import {
@@ -926,6 +928,24 @@ function WorkspaceApp({ cloud = null }) {
     setState(next);
     setError("");
   }
+  function changeJob(next) {
+    commit(next, { replaceWorkspace: true });
+    setTab("Resumen");
+    setViewKind(next.cycle.kind);
+    setReference(dateInZone(new Date(), zoneFor(next.profile)));
+    setShowSetup(!next.configured);
+    setDismissed("");
+    setNotice("");
+  }
+  const jobSwitcher = state && (
+    <JobSwitcher
+      state={state}
+      disabled={storageBlocked || hasModal}
+      onSwitch={(id) => changeJob(switchJob(state, id))}
+      onAdd={(name) => changeJob(addJob(state, name, crypto.randomUUID()))}
+      onRename={(name) => commit(renameJob(state, name))}
+    />
+  );
   function safeCommit(next) {
     try {
       commit(next);
@@ -937,7 +957,7 @@ function WorkspaceApp({ cloud = null }) {
     return (
       <div className="loading">
         <Icon name="clock" size={36} />
-        <strong>jornada.</strong>
+        <strong>jornadapp.</strong>
         <p>Preparando tu espacio…</p>
       </div>
     );
@@ -1046,7 +1066,7 @@ function WorkspaceApp({ cloud = null }) {
       const next = validateWorkspace(JSON.parse(await file.text()));
       if (
         !confirm(
-          "¿Reemplazar los datos actuales con esta copia? Descargá primero una copia si querés conservarlos.",
+          "¿Reemplazar TODOS tus trabajos con esta copia? Descargá primero una copia si querés conservarlos.",
         )
       )
         return;
@@ -1103,23 +1123,27 @@ function WorkspaceApp({ cloud = null }) {
     );
   if (showSetup)
     return (
-      <Setup
-        state={state}
-        cloudEnabled={!!cloud}
-        onSave={(next, options) => {
-          commit(next, options);
-          setViewKind(next.cycle.kind);
-          setShowSetup(false);
-          setNotice("Tu espacio ya está configurado.");
-        }}
-        onCancel={state.configured ? () => setShowSetup(false) : undefined}
-      />
+      <>
+        {jobSwitcher}
+        <Setup
+          key={jobId(state)}
+          state={state}
+          cloudEnabled={!!cloud}
+          onSave={(next, options) => {
+            commit(next, options);
+            setViewKind(next.cycle.kind);
+            setShowSetup(false);
+            setNotice("Tu espacio ya está configurado.");
+          }}
+          onCancel={state.configured ? () => setShowSetup(false) : undefined}
+        />
+      </>
     );
   return (
     <div className="shell">
       <aside className="sidebar">
         <a className="brand" href="/">
-          <Icon name="clock" size={30} /> jornada<span>.</span>
+          <Icon name="clock" size={30} /> jornadapp<span>.</span>
         </a>
         <div className="brand-caption">TU TIEMPO, BIEN CONTADO.</div>
         <div className="workspace-label">TU ESPACIO</div>
@@ -1174,11 +1198,12 @@ function WorkspaceApp({ cloud = null }) {
           </div>
         </div>
       </aside>
-      <main className="main">
+      <main className="main" key={jobId(state)}>
+        {jobSwitcher}
         <header className="topbar">
           <a href="/" className="mobile-wordmark">
             <Icon name="clock" size={22} />
-            jornada<span>.</span>
+            jornadapp<span>.</span>
           </a>
           <span className="breadcrumb">
             Mi espacio <span className="slash">/</span>
@@ -1626,7 +1651,7 @@ function WorkspaceApp({ cloud = null }) {
             <div className="split">
               <h2 id="modal-title">
                 {premium
-                  ? "Lo que viene con Jornada Premium"
+                  ? "Lo que viene con Jornadapp Premium"
                   : closing
                     ? "Confirmá tu hora de salida"
                     : adding === "absence"

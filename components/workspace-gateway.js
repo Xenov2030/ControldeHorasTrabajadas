@@ -31,7 +31,7 @@ function Loading() {
   return (
     <div className="loading">
       <Icon name="clock" size={34} />
-      <strong>jornada.</strong>
+      <strong>jornadapp.</strong>
       <p>Abriendo tu espacio personal…</p>
     </div>
   );
@@ -42,7 +42,7 @@ function AccountFrame({ children }) {
       <div className="account-story">
         <a className="brand" href="/">
           <Icon name="clock" size={32} />
-          jornada<span>.</span>
+          jornadapp<span>.</span>
         </a>
         <span className="eyebrow">TU TIEMPO TE ACOMPAÑA</span>
         <h1>

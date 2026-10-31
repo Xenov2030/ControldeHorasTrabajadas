@@ -3387,3 +3387,59 @@ select option {
     min-height: calc(100dvh - 72px);
   }
 }
+
+.job-switcher {
+  margin: 16px 0 20px;
+  padding: 18px;
+  border: 1px solid var(--border, #7775);
+  border-radius: 18px;
+  background: var(--surface);
+}
+.job-switcher:has(+ .setup-shell) {
+  margin: 16px;
+}
+.job-switcher-row,
+.job-name-form {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.job-switcher label {
+  display: grid;
+  gap: 8px;
+  flex: 1;
+  min-width: 180px;
+}
+.job-switcher-row label > span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+.job-switcher select,
+.job-switcher input {
+  width: 100%;
+  min-height: 44px;
+}
+.job-switcher p {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.job-name-form {
+  margin-top: 16px;
+}
+@media (max-width: 600px) {
+  .job-switcher {
+    padding: 14px;
+  }
+  .job-switcher-row label {
+    flex-basis: 100%;
+  }
+  .job-switcher-row button {
+    flex: 1;
+  }
+  .job-name-form label {
+    flex-basis: 100%;
+  }
+}

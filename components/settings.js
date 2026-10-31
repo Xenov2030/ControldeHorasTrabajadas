@@ -199,9 +199,9 @@ export default function Settings({
         <section className="panel settings-panel backup-panel">
           <h2>Tu información, bajo tu control</h2>
           <p>
-            La copia JSON incluye perfil, horarios, jornadas y condiciones de
-            pago. Guardala en un lugar privado; permite recuperar tus datos en
-            este navegador.
+            La copia JSON incluye todos tus trabajos, con sus perfiles,
+            horarios, jornadas y condiciones de pago. Guardala en un lugar
+            privado; permite recuperar tus datos en este navegador.
           </p>
           <div className="button-row">
             <button className="secondary" onClick={onBackup}>
