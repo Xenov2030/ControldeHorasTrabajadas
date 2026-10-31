@@ -3513,3 +3513,8 @@ html[data-theme="dark"] .brand-mark--auto .brand-mark-dark,
     width: 160px;
   }
 }
+
+/* Preserve full sidebar cards on short desktop windows; scroll the sidebar. */
+.sidebar > * {
+  flex-shrink: 0;
+}
