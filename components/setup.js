@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { DAYS, PAY_MODES, scheduleHours } from "../lib/workspace.mjs";
 import Icon from "./icon";
+import DecimalInput from "./decimal-input";
 export const SECTIONS = [
   "Tu perfil",
   "Tus horarios",
@@ -197,14 +198,14 @@ export function SalaryFields({ value, onChange, initial = false }) {
       </label>
       <label>
         Importe en pesos argentinos
-        <input
+        <DecimalInput
           name="amount"
-          type="number"
+
           min="0"
           max="1000000000000"
-          step="0.01"
+
           value={value.amount}
-          onChange={(e) => set("amount", Number(e.target.value))}
+          onValueChange={(n) => set("amount", n)}
           required
         />
         <small>
@@ -216,13 +217,12 @@ export function SalaryFields({ value, onChange, initial = false }) {
       {value.mode === "daily" && (
         <label>
           Horas incluidas por jornada
-          <input
-            type="number"
+          <DecimalInput
             min="0.25"
             max="24"
-            step="0.25"
+
             value={value.dailyHours}
-            onChange={(e) => set("dailyHours", Number(e.target.value))}
+            onValueChange={(n) => set("dailyHours", n)}
             required
           />
           <small>Las fracciones de jornada se estiman proporcionalmente.</small>
@@ -244,12 +244,11 @@ export function SalaryFields({ value, onChange, initial = false }) {
           {["monthly", "fortnightly"].includes(value.mode) && (
             <label>
               Valor hora para extras y feriados
-              <input
-                type="number"
+              <DecimalInput
                 min="0"
-                step="0.01"
+
                 value={value.overtimeRate}
-                onChange={(e) => set("overtimeRate", Number(e.target.value))}
+                onValueChange={(n) => set("overtimeRate", n)}
                 required
               />
               <small>

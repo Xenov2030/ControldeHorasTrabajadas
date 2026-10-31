@@ -253,3 +253,84 @@ test("SAC proporcional según fecha de ingreso y cero después del semestre", ()
     0,
   );
 });
+
+test("ausencia sin pago se registra sin sumar horas trabajadas o ingresos", () => {
+  const s = state();
+  s.entries = [
+    entry("2026-10-09", 8, {
+      type: "absence",
+      absenceJustified: false,
+      absencePaid: false,
+      deductionAmount: 0,
+    }),
+  ];
+  validateWorkspace(s);
+  const t = periodTotals(s, "2026-10-01", "2026-10-15");
+  assert.equal(t.workedHours, 0);
+  assert.equal(t.overtimeHours, 0);
+  assert.equal(t.absenceHours, 8);
+  assert.equal(t.unjustifiedAbsences, 1);
+  assert.equal(t.amount, 0);
+});
+test("justificada y paga son condiciones independientes", () => {
+  const s = state();
+  s.entries = [
+    entry("2026-10-09", 8, {
+      type: "absence",
+      absenceJustified: true,
+      absencePaid: false,
+      deductionAmount: 0,
+    }),
+  ];
+  assert.equal(periodTotals(s, "2026-10-01", "2026-10-15").amount, 0);
+  s.entries[0].absencePaid = true;
+  const t = periodTotals(s, "2026-10-01", "2026-10-15");
+  assert.equal(t.justifiedAbsences, 1);
+  assert.equal(t.amount, 28000);
+  assert.equal(t.workedHours, 0);
+});
+test("sueldo fijo solo descuenta la cantidad indicada manualmente", () => {
+  const s = state();
+  s.compensation[0] = { ...s.compensation[0], mode: "monthly", amount: 310000 };
+  s.entries = [
+    entry("2026-10-09", 8, {
+      type: "absence",
+      absenceJustified: false,
+      absencePaid: false,
+      deductionAmount: 1234.5,
+    }),
+  ];
+  const t = periodTotals(s, "2026-10-01", "2026-10-31");
+  assert.equal(t.amount, 308765.5);
+  assert.equal(t.deductionAmount, 1234.5);
+  s.entries[0].deductionAmount = 0;
+  assert.equal(periodTotals(s, "2026-10-01", "2026-10-31").amount, 310000);
+});
+test("ausencia paga en sueldo fijo no duplica el pago", () => {
+  const s = state();
+  s.compensation[0] = { ...s.compensation[0], mode: "monthly", amount: 310000 };
+  s.entries = [
+    entry("2026-10-09", 8, {
+      type: "absence",
+      absenceJustified: true,
+      absencePaid: true,
+      deductionAmount: 0,
+    }),
+  ];
+  assert.equal(periodTotals(s, "2026-10-01", "2026-10-31").amount, 310000);
+});
+test("impide duplicar ausencias o mezclar ausencia con trabajo en la misma fecha", () => {
+  const s = state();
+  const a = entry("2026-10-09", 8, {
+    type: "absence",
+    absenceJustified: true,
+    absencePaid: false,
+    deductionAmount: 0,
+  });
+  s.entries = [a, entry("2026-10-09", 2, { id: "other" })];
+  assert.throws(() => validateWorkspace(s));
+  s.entries = [a, { ...a, id: "other" }];
+  assert.throws(() => validateWorkspace(s));
+});
+test("copia anterior sigue siendo válida sin datos de ausencias", () =>
+  assert.doesNotThrow(() => validateWorkspace(state())));

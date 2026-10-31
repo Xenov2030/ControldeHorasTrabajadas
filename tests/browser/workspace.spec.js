@@ -238,3 +238,157 @@ test("no sobrescribe datos corruptos y permite descargar el original", async ({
   const file = await downloadPromise;
   assert.match(file.suggestedFilename(), /recuperacion/);
 });
+
+test("decimales con coma en sueldo, horas, cobros y aguinaldo; faltas justificadas y no justificadas", async ({
+  page,
+}, testInfo) => {
+  const { createWorkspace } = await import("../../lib/workspace.mjs");
+  const s = createWorkspace();
+  s.configured = true;
+  s.profile.name = "Lucía";
+  await page.clock.install({ time: new Date("2026-10-30T17:30:00Z") });
+  await page.addInitScript((value) => {
+    if (!localStorage.getItem("jornada-v2"))
+      localStorage.setItem("jornada-v2", JSON.stringify(value));
+  }, s);
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Configuración", exact: true })
+    .click();
+  await page.getByRole("tab", { name: "Cómo te pagan", exact: true }).click();
+  const salary = page.getByLabel("Importe en pesos argentinos");
+  await salary.fill("");
+  await salary.pressSequentially("3500,");
+  assert.equal(await salary.inputValue(), "3500,");
+  assert.equal(await salary.evaluate((input) => input.checkValidity()), false);
+  await salary.pressSequentially("75");
+  assert.equal(await salary.inputValue(), "3500,75");
+  assert.equal(await salary.evaluate((input) => input.checkValidity()), true);
+  await page.getByLabel("Vigente desde").fill("2026-10-01");
+  await page.getByRole("button", { name: "Agregar al historial" }).click();
+  await page.getByText("Cambios guardados en este navegador.").waitFor();
+  let saved = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("jornada-v2")),
+  );
+  assert.equal(saved.compensation[1].amount, 3500.75);
+  await page.getByRole("button", { name: "Mis jornadas", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Agregar jornada", exact: true })
+    .click();
+  let dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Fecha de entrada").fill("2026-10-09");
+  await dialog
+    .getByRole("button", { name: "Total de horas", exact: true })
+    .click();
+  await dialog.getByLabel("Horas trabajadas", { exact: true }).fill("8,5");
+  await dialog
+    .getByRole("button", { name: "Guardar jornada", exact: true })
+    .click();
+  await page
+    .getByRole("status")
+    .filter({ hasText: "Jornada guardada." })
+    .waitFor();
+  saved = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("jornada-v2")),
+  );
+  assert.equal(saved.entries[0].hours, 8.5);
+  await page
+    .getByRole("button", { name: "Registrar ausencia", exact: true })
+    .click();
+  dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Fecha de entrada").fill("2026-10-08");
+  await dialog.getByLabel("Horas de ausencia", { exact: true }).fill("9");
+  await dialog
+    .getByRole("combobox", { name: /La falta está justificada/ })
+    .selectOption("true");
+  await dialog
+    .getByRole("combobox", { name: /La ausencia es paga/ })
+    .selectOption("false");
+  await dialog.getByLabel("Motivo de la ausencia").fill("Avisé a la empresa");
+  await dialog
+    .getByRole("button", { name: "Guardar ausencia", exact: true })
+    .click();
+  await page
+    .getByRole("status")
+    .filter({ hasText: "Ausencia guardada." })
+    .waitFor();
+  await page
+    .getByRole("button", { name: "Registrar ausencia", exact: true })
+    .click();
+  dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Fecha de entrada").fill("2026-10-07");
+  await dialog
+    .getByRole("combobox", { name: /La falta está justificada/ })
+    .selectOption("false");
+  await dialog
+    .getByRole("button", { name: "Guardar ausencia", exact: true })
+    .click();
+  await page
+    .getByRole("status")
+    .filter({ hasText: "Ausencia guardada." })
+    .waitFor();
+  saved = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("jornada-v2")),
+  );
+  assert.equal(saved.entries.length, 3);
+  assert.equal(saved.entries[1].absenceJustified, true);
+  assert.equal(saved.entries[2].absenceJustified, false);
+  assert.equal(saved.entries[1].absencePaid, false);
+  assert.match(await page.locator("table").innerText(), /Falta justificada/);
+  assert.match(await page.locator("table").innerText(), /Sin justificar/);
+  await page.getByRole("button", { name: "Mis cobros", exact: true }).click();
+  await page.getByLabel("Importe recibido ($)").fill("12345,67");
+  await page
+    .getByRole("button", { name: "Guardar cobro", exact: true })
+    .click();
+  saved = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("jornada-v2")),
+  );
+  assert.equal(saved.payments[0].amount, 12345.67);
+  await page.getByRole("button", { name: "Aguinaldo", exact: true }).click();
+  await page.getByRole("combobox", { name: /Semestre/ }).selectOption("2");
+  await page.getByLabel("Base julio", { exact: true }).fill("1000000,50");
+  await page.getByLabel("Extras julio", { exact: true }).fill("10000,25");
+  await page.getByRole("button", { name: "Guardar remuneraciones" }).click();
+  saved = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("jornada-v2")),
+  );
+  assert.equal(saved.sac[0].base, 1000000.5);
+  assert.equal(saved.sac[0].extras, 10000.25);
+  await page.getByRole("button", { name: "Resumen", exact: true }).click();
+  await page
+    .getByLabel("Fecha del período", { exact: true })
+    .fill("2026-10-09");
+  await page.screenshot({
+    path: testInfo.outputPath("nuevo-diseno-pc.png"),
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page
+    .locator(".topbar")
+    .getByRole("combobox", { name: "Apariencia", exact: true })
+    .selectOption("dark");
+  assert.equal(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+    true,
+  );
+  await page.screenshot({
+    path: testInfo.outputPath("nuevo-diseno-celular.png"),
+    fullPage: true,
+  });
+  await page
+    .getByRole("button", { name: "Registrar ausencia", exact: true })
+    .click();
+  await page.screenshot({
+    path: testInfo.outputPath("ausencia-celular.png"),
+    fullPage: true,
+  });
+  assert.equal(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+    true,
+  );
+});

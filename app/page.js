@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Icon from "../components/icon";
+import DecimalInput from "../components/decimal-input";
+import { parseDecimal } from "../lib/decimal.mjs";
 import Setup from "../components/setup";
 import Settings from "../components/settings";
 import Sac from "../components/sac";
@@ -48,11 +50,22 @@ function downloadFile(content, name, type) {
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 500);
 }
-const decimalHours = (n) => `${Number(n.toFixed(2))} h`;
+const numberLabel = new Intl.NumberFormat("es-AR", {
+  maximumFractionDigits: 2,
+});
+const decimalHours = (n) =>
+  `${new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2 }).format(n)} h`;
 
-function EntryForm({ state, onAdd, closing = false, onCancel, today }) {
+function EntryForm({
+  state,
+  onAdd,
+  closing = false,
+  onCancel,
+  today,
+  initialKind = "work",
+}) {
   const session = state.activeSession;
-  const [kind, setKind] = useState("work"),
+  const [kind, setKind] = useState(initialKind),
     [method, setMethod] = useState("times"),
     [date, setDate] = useState(
       closing ? localDate(new Date(session.startedAt)) : today,
@@ -68,6 +81,9 @@ function EntryForm({ state, onAdd, closing = false, onCancel, today }) {
     [hours, setHours] = useState(8),
     [rest, setRest] = useState(0),
     [quantity, setQuantity] = useState(0),
+    [absenceJustified, setAbsenceJustified] = useState(true),
+    [absencePaid, setAbsencePaid] = useState(false),
+    [deductionAmount, setDeductionAmount] = useState(0),
     [error, setError] = useState("");
   const v = compensationAt(state.compensation, date);
   function submit(e) {
@@ -84,7 +100,7 @@ function EntryForm({ state, onAdd, closing = false, onCancel, today }) {
       }
       const overnight = closing ? exitDate !== date : nextDay;
       const h =
-        method === "times" && kind !== "vacation"
+        method === "times" && !["vacation", "absence"].includes(kind)
           ? duration(start, end, rest, overnight)
           : Number(hours);
       onAdd(
@@ -92,10 +108,21 @@ function EntryForm({ state, onAdd, closing = false, onCancel, today }) {
           id: crypto.randomUUID(),
           date,
           type: kind,
+          ...(kind === "absence"
+            ? {
+                absenceJustified,
+                absencePaid,
+                deductionAmount:
+                  !absencePaid && ["monthly", "fortnightly"].includes(v?.mode)
+                    ? deductionAmount
+                    : 0,
+                quantity: 0,
+              }
+            : {}),
           hours: h,
-          quantity: Number(quantity),
+          quantity: kind === "absence" ? 0 : Number(quantity),
           note: new FormData(e.currentTarget).get("note") || "",
-          ...(method === "times" && kind !== "vacation"
+          ...(method === "times" && !["vacation", "absence"].includes(kind)
             ? { start, end, nextDay: overnight, breakMinutes: rest }
             : {}),
         },
@@ -136,7 +163,7 @@ function EntryForm({ state, onAdd, closing = false, onCancel, today }) {
           </select>
         </label>
       </div>
-      {kind !== "vacation" && !closing && (
+      {!["vacation", "absence"].includes(kind) && !closing && (
         <div className="segmented">
           <button
             type="button"
@@ -154,7 +181,7 @@ function EntryForm({ state, onAdd, closing = false, onCancel, today }) {
           </button>
         </div>
       )}
-      {method === "times" && kind !== "vacation" ? (
+      {method === "times" && !["vacation", "absence"].includes(kind) ? (
         <>
           <div className="form-grid">
             <label>
@@ -214,39 +241,97 @@ function EntryForm({ state, onAdd, closing = false, onCancel, today }) {
         </>
       ) : (
         <label>
-          Horas {kind === "vacation" ? "de vacaciones" : "trabajadas"}
-          <input
-            type="number"
+          Horas{" "}
+          {kind === "vacation"
+            ? "de vacaciones"
+            : kind === "absence"
+              ? "de ausencia"
+              : "trabajadas"}
+          <DecimalInput
             min="0.0166667"
             max="24"
-            step="any"
+
             value={hours}
-            onChange={(e) => setHours(Number(e.target.value))}
+            onValueChange={setHours}
             required
           />
         </label>
       )}
-      {v?.mode === "piecework" && kind !== "vacation" && (
+      {v?.mode === "piecework" && !["vacation", "absence"].includes(kind) && (
         <label>
           Cantidad realizada ({v.unit})
-          <input
-            type="number"
+          <DecimalInput
             min="0"
-            step="0.01"
+
             value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value))}
+            onValueChange={setQuantity}
             required
           />
         </label>
       )}
       <label>
-        Nota <span className="optional">Opcional</span>
+        {kind === "absence" ? "Motivo de la ausencia" : "Nota"}{" "}
+        <span className="optional">Opcional</span>
         <input
           name="note"
           maxLength="200"
-          placeholder="Proyecto, tarea o comentario"
+          placeholder={
+            kind === "absence"
+              ? "Por ejemplo: aviso previo a la empresa"
+              : "Proyecto, tarea o comentario"
+          }
         />
       </label>
+      {kind === "absence" && (
+        <div className="absence-fields">
+          <div className="form-grid">
+            <label>
+              ¿La falta está justificada?
+              <select
+                value={String(absenceJustified)}
+                onChange={(e) => setAbsenceJustified(e.target.value === "true")}
+              >
+                <option value="true">Sí, justificada</option>
+                <option value="false">No, sin justificar</option>
+              </select>
+            </label>
+            <label>
+              ¿La ausencia es paga?
+              <select
+                value={String(absencePaid)}
+                onChange={(e) => setAbsencePaid(e.target.value === "true")}
+              >
+                <option value="false">No, sin pago</option>
+                <option value="true">Sí, con pago</option>
+              </select>
+            </label>
+          </div>
+          {!absencePaid && ["monthly", "fortnightly"].includes(v?.mode) && (
+            <label>
+              Descuento acordado por esta falta ($)
+              <DecimalInput
+                value={deductionAmount}
+                min="0"
+                max="1000000000000"
+                onValueChange={setDeductionAmount}
+                required
+              />
+              <small>
+                Ingresá el importe manualmente. Si dejás cero, no se descuenta
+                del sueldo fijo.
+              </small>
+            </label>
+          )}
+          <div className="inline-note">
+            <Icon name="info" />
+            <span>
+              Justificada no significa necesariamente paga. Registrá las
+              condiciones acordadas: no aplicamos descuentos legales automáticos
+              ni pedimos documentación.
+            </span>
+          </div>
+        </div>
+      )}
       {error && (
         <div className="alert error" role="alert">
           {error}
@@ -254,7 +339,11 @@ function EntryForm({ state, onAdd, closing = false, onCancel, today }) {
       )}
       <button className="primary">
         <Icon name="check" size={17} />
-        {closing ? "Confirmar salida real" : "Guardar jornada"}
+        {closing
+          ? "Confirmar salida real"
+          : kind === "absence"
+            ? "Guardar ausencia"
+            : "Guardar jornada"}
       </button>
       {closing && (
         <button type="button" className="text-button" onClick={onCancel}>
@@ -300,11 +389,12 @@ function SessionCard({
           onClick={() => {
             if (
               state.entries.some(
-                (e) => e.date === today && e.type === "vacation",
+                (e) =>
+                  e.date === today && ["vacation", "absence"].includes(e.type),
               )
             ) {
               setError(
-                "Hoy tenés vacaciones registradas. Revisá ese registro antes de iniciar una jornada.",
+                "Hoy tenés vacaciones o una ausencia registrada. Revisá ese registro antes de iniciar una jornada.",
               );
               return;
             }
@@ -446,7 +536,9 @@ function Records({ entries, onDelete, onExport }) {
                       <small>
                         {e.start
                           ? `${e.start} → ${e.end}${e.nextDay ? " (+1 día)" : ""}`
-                          : "Carga por horas"}
+                          : e.type === "absence"
+                            ? "Ausencia registrada"
+                            : "Carga por horas"}
                       </small>
                       {e.note && (
                         <small className="record-note">{e.note}</small>
@@ -454,8 +546,20 @@ function Records({ entries, onDelete, onExport }) {
                     </td>
                     <td>
                       <span className={"badge " + e.type}>
-                        {ENTRY_TYPES[e.type]}
+                        {e.type === "absence"
+                          ? e.absenceJustified
+                            ? "Falta justificada"
+                            : "Sin justificar"
+                          : ENTRY_TYPES[e.type]}
                       </span>
+                      {e.type === "absence" && (
+                        <small>
+                          {e.absencePaid ? "Con pago" : "Sin pago"}
+                          {e.deductionAmount > 0
+                            ? ` · Descuento: ${currency(e.deductionAmount)}`
+                            : ""}
+                        </small>
+                      )}
                       {e.quantity > 0 && <small>{e.quantity} unidades</small>}
                     </td>
                     <td>{decimalHours(e.hours)}</td>
@@ -513,7 +617,7 @@ function Payments({ state, onSave, today }) {
             start,
             end,
             date: f.get("date"),
-            amount: Number(f.get("amount")),
+            amount: parseDecimal(f.get("amount")),
           },
         ],
       });
@@ -578,12 +682,12 @@ function Payments({ state, onSave, today }) {
               </label>
               <label>
                 Importe recibido ($)
-                <input
+                <DecimalInput
                   name="amount"
-                  type="number"
+
                   min="0.01"
                   max="1000000000000"
-                  step="0.01"
+
                   required
                 />
               </label>
@@ -792,8 +896,10 @@ export default function Home() {
       : 0;
   function add(entry, close) {
     if (entry.date > today) throw new Error("No podés guardar trabajo futuro.");
-    if (state.activeSession && entry.type === "vacation")
-      throw new Error("Cerrá la jornada activa antes de registrar vacaciones.");
+    if (state.activeSession && ["vacation", "absence"].includes(entry.type))
+      throw new Error(
+        "Cerrá la jornada activa antes de registrar vacaciones o ausencias.",
+      );
     if (
       close &&
       entry.date !== localDate(new Date(state.activeSession.startedAt))
@@ -808,7 +914,9 @@ export default function Home() {
     });
     setClosing(false);
     setAdding(false);
-    setNotice("Jornada guardada.");
+    setNotice(
+      entry.type === "absence" ? "Ausencia guardada." : "Jornada guardada.",
+    );
     setReference(entry.date);
   }
   function exportCsv() {
@@ -821,7 +929,18 @@ export default function Home() {
     downloadFile(
       "\uFEFF" +
         [
-          ["Fecha", "Tipo", "Entrada", "Salida", "Horas", "Cantidad", "Nota"],
+          [
+            "Fecha",
+            "Tipo",
+            "Entrada",
+            "Salida",
+            "Horas",
+            "Cantidad",
+            "Nota",
+            "Justificada",
+            "Paga",
+            "Descuento",
+          ],
           ...selected.map((e) => [
             e.date,
             ENTRY_TYPES[e.type],
@@ -830,6 +949,9 @@ export default function Home() {
             e.hours,
             e.quantity,
             e.note,
+            e.type === "absence" ? (e.absenceJustified ? "Sí" : "No") : "",
+            e.type === "absence" ? (e.absencePaid ? "Sí" : "No") : "",
+            e.deductionAmount ?? "",
           ]),
         ]
           .map((row) => row.map(cell).join(";"))
@@ -1120,6 +1242,25 @@ export default function Home() {
               {tab === "Resumen" && (
                 <div className="mobile-session">{sessionCard}</div>
               )}
+              <div className="overview-toolbar">
+                <div>
+                  <span className="section-label">TU ACTIVIDAD</span>
+                  <strong>Un período, todas tus cuentas.</strong>
+                </div>
+                <div className="button-row">
+                  <button
+                    className="secondary"
+                    onClick={() => setAdding("absence")}
+                  >
+                    <Icon name="calendar" size={17} />
+                    Registrar ausencia
+                  </button>
+                  <button className="primary" onClick={() => setAdding(true)}>
+                    <Icon name="plus" size={17} />
+                    Nueva jornada
+                  </button>
+                </div>
+              </div>
               <div className="metrics">
                 <article className="income">
                   <div>
@@ -1135,12 +1276,12 @@ export default function Home() {
                     <Icon name="clock" />
                   </div>
                   <strong>
-                    {totals.workedHours}
+                    {numberLabel.format(totals.workedHours)}
                     <em> h</em>
                   </strong>
                   <small>
-                    {totals.regularHours} habituales · {totals.holidayHours} en
-                    feriados
+                    {numberLabel.format(totals.regularHours)} habituales ·{" "}
+                    {numberLabel.format(totals.holidayHours)} en feriados
                   </small>
                 </article>
                 <article>
@@ -1149,7 +1290,7 @@ export default function Home() {
                     <Icon name="bolt" />
                   </div>
                   <strong>
-                    {totals.overtimeHours}
+                    {numberLabel.format(totals.overtimeHours)}
                     <em> h</em>
                   </strong>
                   <small>
@@ -1171,6 +1312,38 @@ export default function Home() {
                   <small>{currency(nextAmount)} generados / proyectados</small>
                 </article>
               </div>
+              <section
+                className="attendance-summary"
+                aria-label="Asistencia del período"
+              >
+                <div>
+                  <span className="attendance-icon">
+                    <Icon name="calendar" size={19} />
+                  </span>
+                  <div>
+                    <strong>Asistencia del período</strong>
+                    <small>También cuentan los días que no trabajaste.</small>
+                  </div>
+                </div>
+                <div>
+                  <span>Justificadas</span>
+                  <strong>{totals.justifiedAbsences}</strong>
+                </div>
+                <div>
+                  <span>Sin justificar</span>
+                  <strong>{totals.unjustifiedAbsences}</strong>
+                </div>
+                <div>
+                  <span>Vacaciones</span>
+                  <strong>{decimalHours(totals.vacationHours)}</strong>
+                </div>
+                {totals.deductionAmount > 0 && (
+                  <div>
+                    <span>Descuentos indicados</span>
+                    <strong>{currency(totals.deductionAmount)}</strong>
+                  </div>
+                )}
+              </section>
               {tab === "Resumen" ? (
                 <div className="dashboard-columns">
                   <div className="dashboard-primary">
@@ -1331,7 +1504,9 @@ export default function Home() {
                   ? "Lo que viene con Jornada Premium"
                   : closing
                     ? "Confirmá tu hora de salida"
-                    : "Sumá una jornada"}
+                    : adding === "absence"
+                      ? "Registrar una ausencia"
+                      : "Sumá una jornada"}
               </h2>
               <button
                 className="icon-button"
@@ -1390,15 +1565,18 @@ export default function Home() {
                 <p>
                   {closing
                     ? "Si terminaste antes, corregí la hora. No usamos la hora del recordatorio como salida."
-                    : "Registrá tus horarios o cargá directamente el total de horas."}
+                    : adding === "absence"
+                      ? "Registrá las horas de ausencia e indicá si están justificadas y si se pagan."
+                      : "Registrá tus horarios o cargá directamente el total de horas."}
                 </p>
                 <EntryForm
-                  key={closing ? "close" : "add"}
+                  key={closing ? "close" : String(adding)}
                   state={state}
                   onAdd={add}
                   closing={closing}
                   onCancel={() => setClosing(false)}
                   today={today}
+                  initialKind={adding === "absence" ? "absence" : "work"}
                 />
               </>
             )}

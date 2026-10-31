@@ -45,7 +45,9 @@ Vercel puede detectar Next.js en la raíz. Este cambio no configura ni publica e
 ## Funciones implementadas
 
 - Asistente inicial de cinco pasos: perfil, horario semanal, modalidad e importe, cierres y cobros, recordatorios.
-- Tema claro, oscuro o según el dispositivo, con preferencia persistida.
+- Diseño renovado con fuentes locales, mejor jerarquía visual y botones accesibles en PC y celular. Tema claro, oscuro o según el dispositivo, con preferencia persistida.
+- Importes, cantidades y horas aceptan coma o punto decimal; por ejemplo, `3500,50`, `3500.50` y `8,5`. También se aceptan miles con parte decimal explícita, como `1.234,50`; un único separador siempre se interpreta como decimal.
+- Registro de faltas justificadas y sin justificar, con motivo opcional y condición paga/sin pago independiente. Las faltas no suman horas trabajadas. Para sueldo fijo, un descuento solo se aplica si el usuario ingresa su importe manualmente.
 - Entrada activa y confirmación de salida real. Carga manual por horarios o por total de horas, con descansos, turnos nocturnos, feriados y vacaciones.
 - Horario pactado diferente para cada día; opciones de 44 horas semanales con o sin sábado. Se acumulan los turnos del mismo día antes de calcular extras.
 - Pago por hora, jornada, quincena, mes o al tanto. La modalidad es independiente de la frecuencia de liquidación y de las fechas de cobro.
@@ -63,9 +65,11 @@ Los valores iniciales son ejemplos editables. No se cargan ni analizan recibos d
 
 Las horas extra se calculan según el excedente diario del horario pactado, con un multiplicador por condición salarial. No se aplican automáticamente límites semanales, convenios, recargos nocturnos, distintos recargos según horario ni descuentos, aportes o retenciones. Los feriados son manuales y usan su propio multiplicador, sin acumular extras.
 
-Por jornada, el importe se divide por las horas incluidas que informa el usuario para estimar fracciones y extras. Los salarios fijos se proyectan por días calendario, incluso antes de cargar asistencia: no se descuentan ausencias ni vacaciones sin pago. Para extras y recargos de feriados con sueldo fijo se pide un valor hora explícito. Al tanto, se calcula cantidad por precio sin agregar importes extra automáticos.
+Por jornada, el importe se divide por las horas incluidas que informa el usuario para estimar fracciones y extras. Los salarios fijos se proyectan por días calendario, incluso antes de cargar asistencia: no se descuentan vacaciones sin pago ni ausencias automáticamente. Los descuentos de faltas con sueldo fijo solo se aplican por el importe manual indicado en cada registro. Para extras y recargos de feriados con sueldo fijo se pide un valor hora explícito. Al tanto, se calcula cantidad por precio sin agregar importes extra automáticos.
 
 Las jornadas nocturnas se asignan a la fecha de entrada y admiten hasta 24 horas, incluido el descanso. Las configuraciones de horario y calendario de cobro se aplican a todo el historial; el historial de vigencias actual cubre únicamente las condiciones salariales.
+
+Las faltas se registran por fecha y no pueden mezclarse con trabajo, vacaciones u otra falta en el mismo día. Si se necesita corregir la justificación de una falta ya guardada, se puede eliminar y volver a cargar.
 
 El SAC usa solo los meses cargados manualmente, no infiere una remuneración legal de las jornadas. Sin fecha de ingreso se asume el semestre completo. No contempla licencias o ausencias no computables. Si falta algún mes, la estimación queda identificada como incompleta.
 

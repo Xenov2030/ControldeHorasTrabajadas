@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { currency, sacEstimate } from "../lib/workspace.mjs";
 import Icon from "./icon";
+import DecimalInput from "./decimal-input";
+import { parseDecimal } from "../lib/decimal.mjs";
 const monthName = (n) =>
   new Intl.DateTimeFormat("es-AR", { month: "long", timeZone: "UTC" }).format(
     new Date(Date.UTC(2026, n, 1)),
@@ -24,7 +26,11 @@ export default function Sac({ state, onSave, today }) {
         base = form.get("base" + i),
         extras = form.get("extras" + i);
       return base !== "" || extras !== ""
-        ? { month, base: Number(base), extras: Number(extras) }
+        ? {
+            month,
+            base: base === "" ? 0 : parseDecimal(base),
+            extras: extras === "" ? 0 : parseDecimal(extras),
+          }
         : null;
     }).filter(Boolean);
     try {
@@ -106,22 +112,22 @@ export default function Sac({ state, onSave, today }) {
               return (
                 <div className="sac-row" key={month}>
                   <strong>{monthName(n)}</strong>
-                  <input
+                  <DecimalInput
                     aria-label={`Base ${monthName(n)}`}
                     name={"base" + i}
-                    type="number"
+
                     min="0"
-                    step="0.01"
+
                     max="1000000000000"
                     defaultValue={row?.base ?? ""}
                     placeholder="Sin cargar"
                   />
-                  <input
+                  <DecimalInput
                     aria-label={`Extras ${monthName(n)}`}
                     name={"extras" + i}
-                    type="number"
+
                     min="0"
-                    step="0.01"
+
                     max="1000000000000"
                     defaultValue={row?.extras ?? ""}
                     placeholder="Sin cargar"

@@ -1,4 +1,7 @@
+import "@fontsource-variable/dm-sans";
+import "@fontsource-variable/manrope";
 import "./globals.css";
+import "./design.css";
 export const metadata = {
   title: "Jornada · Tus horas, claras",
   description:
