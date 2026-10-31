@@ -119,8 +119,8 @@ export default function Sac({ state, onSave, today }) {
           <form key={`${year}-${half}`} onSubmit={save} className="sac-form">
             <div className="sac-row sac-head">
               <span>Mes</span>
-              <span>Base sin extras ($)</span>
-              <span>Extras ($)</span>
+              <span>Base sin extras ({currencyFor(state.profile)})</span>
+              <span>Extras ({currencyFor(state.profile)})</span>
             </div>
             {Array.from({ length: 6 }, (_, i) => {
               const n = (half - 1) * 6 + i,

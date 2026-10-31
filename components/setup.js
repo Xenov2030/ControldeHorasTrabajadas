@@ -9,9 +9,11 @@ import {
   countryFor,
   zoneFor,
   currencyFor,
+  currencyName,
   zoneLabel,
 } from "../lib/locations.mjs";
 import CreatorCredit from "./creator-credit";
+import CurrencyConfirmation from "./currency-confirmation";
 export const SECTIONS = [
   "Tu perfil",
   "Tus horarios",
@@ -24,12 +26,7 @@ const presets = [
   ["L–V 8 h · S 4 h", [8, 8, 8, 8, 8, 4, 0]],
   ["L–V 8 h", [8, 8, 8, 8, 8, 0, 0]],
 ];
-export function ProfileFields({
-  value,
-  onChange,
-  currencyLocked = false,
-  locationLocked = false,
-}) {
+export function ProfileFields({ value, onChange, locationLocked = false }) {
   const selected = countryFor(value);
   function changeCountry(code) {
     const country = COUNTRIES.find((c) => c.code === code);
@@ -38,7 +35,7 @@ export function ProfileFields({
       country: code,
       region: "",
       timeZone: country.timeZone,
-      currency: currencyLocked ? currencyFor(value) : country.currency,
+      currency: country.currency,
     });
   }
 
@@ -112,19 +109,18 @@ export function ProfileFields({
           aria-label="Moneda de registro"
           value={currencyFor(value)}
           onChange={(e) => onChange({ ...value, currency: e.target.value })}
-          disabled={currencyLocked}
+          disabled={locationLocked}
           required
         >
           {CURRENCIES.map((code) => (
             <option key={code} value={code}>
-              {code}
+              {code} · {currencyName(code)}
             </option>
           ))}
         </select>
         <small>
-          {currencyLocked
-            ? "Se conserva la moneda de tus registros. Cambiar de país no convierte importes."
-            : "Los importes se registran en esta moneda; no realizamos conversiones."}
+          Moneda habitual de {selected.name}: {selected.currency}. Podés elegir
+          otra; no realizamos conversiones de dinero.
         </small>
       </label>
       {locationLocked && (
@@ -599,7 +595,8 @@ export function ReminderFields({ value, onChange }) {
 export default function Setup({ state, onSave, onCancel }) {
   const [draft, setDraft] = useState(() => structuredClone(state)),
     [step, setStep] = useState(0),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [currencyConfirmed, setCurrencyConfirmed] = useState(false);
   const set = (key, value) => setDraft({ ...draft, [key]: value });
   function submit(e) {
     e.preventDefault();
@@ -608,7 +605,10 @@ export default function Setup({ state, onSave, onCancel }) {
       if (step === 1) scheduleHours(draft.schedule);
       if (step < 4) setStep(step + 1);
       else {
-        onSave({ ...draft, configured: true });
+        onSave(
+          { ...draft, configured: true },
+          { confirmCurrencyCorrection: currencyConfirmed },
+        );
       }
     } catch (err) {
       setError(err.message);
@@ -685,14 +685,12 @@ export default function Setup({ state, onSave, onCancel }) {
           {step === 0 ? (
             <ProfileFields
               value={draft.profile}
-              currencyLocked={
-                draft.entries.length > 0 ||
-                draft.payments.length > 0 ||
-                draft.sac.length > 0 ||
-                draft.compensation.length > 1
-              }
               locationLocked={!!draft.activeSession}
-              onChange={(v) => set("profile", v)}
+              onChange={(v) => {
+                if (currencyFor(v) !== currencyFor(draft.profile))
+                  setCurrencyConfirmed(false);
+                set("profile", v);
+              }}
             />
           ) : step === 1 ? (
             <ScheduleFields
@@ -717,6 +715,14 @@ export default function Setup({ state, onSave, onCancel }) {
             <ReminderFields
               value={draft.reminders}
               onChange={(v) => set("reminders", v)}
+            />
+          )}
+          {step === 0 && (
+            <CurrencyConfirmation
+              previous={state}
+              profile={draft.profile}
+              confirmed={currencyConfirmed}
+              onChange={setCurrencyConfirmed}
             />
           )}
           <p className="field-help">

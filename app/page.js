@@ -3,6 +3,10 @@ import { useEffect, useRef, useState } from "react";
 import Icon from "../components/icon";
 import CreatorCredit from "../components/creator-credit";
 import {
+  checkCurrencyCorrection,
+  CURRENCY_BACKUP_KEY,
+} from "../lib/currency-change.mjs";
+import {
   countryFor,
   currencyFor,
   zoneFor,
@@ -312,7 +316,7 @@ function EntryForm({
           </div>
           {!absencePaid && ["monthly", "fortnightly"].includes(v?.mode) && (
             <label>
-              Descuento acordado por esta falta ($)
+              Descuento acordado por esta falta ({currencyFor(state.profile)})
               <DecimalInput
                 value={deductionAmount}
                 min="0"
@@ -712,9 +716,7 @@ function Payments({ state, onSave, today }) {
                 />
               </label>
               <label>
-                {currencyFor(state.profile) === "ARS"
-                  ? "Importe recibido ($)"
-                  : `Importe recibido (${currencyFor(state.profile)})`}
+                {`Importe recibido (${currencyFor(state.profile)})`}
                 <DecimalInput
                   name="amount"
 
@@ -876,24 +878,18 @@ export default function Home() {
       returnFocus.current?.focus();
     };
   }, [hasModal]);
-  function commit(next, { replaceWorkspace = false } = {}) {
+  function commit(
+    next,
+    { replaceWorkspace = false, confirmCurrencyCorrection = false } = {},
+  ) {
     if (storageBlocked)
       throw new Error(
         "El almacenamiento está bloqueado para proteger los datos anteriores.",
       );
     validateWorkspace(next);
-    if (
+    const saveCurrencyBackup =
       !replaceWorkspace &&
-      state &&
-      (state.entries.length ||
-        state.payments.length ||
-        state.sac.length ||
-        state.compensation.length > 1) &&
-      currencyFor(next.profile) !== currencyFor(state.profile)
-    )
-      throw new Error(
-        "La moneda de este espacio ya tiene registros. Cambiar de país no convierte los importes históricos.",
-      );
+      checkCurrencyCorrection(state, next, confirmCurrencyCorrection);
     if (
       !replaceWorkspace &&
       state?.activeSession &&
@@ -903,6 +899,8 @@ export default function Home() {
         "Cerrá la jornada activa antes de cambiar la zona horaria.",
       );
     try {
+      if (saveCurrencyBackup)
+        localStorage.setItem(CURRENCY_BACKUP_KEY, JSON.stringify(state));
       localStorage.setItem(STORAGE, JSON.stringify(next));
     } catch {
       throw new Error(
@@ -1091,8 +1089,8 @@ export default function Home() {
     return (
       <Setup
         state={state}
-        onSave={(next) => {
-          commit(next);
+        onSave={(next, options) => {
+          commit(next, options);
           setViewKind(next.cycle.kind);
           setShowSetup(false);
           setNotice("Tu espacio ya está configurado.");
@@ -1301,12 +1299,25 @@ export default function Home() {
           {tab === "Configuración" ? (
             <Settings
               state={state}
-              onSave={(next) => {
-                commit(next);
+              onSave={(next, options) => {
+                commit(next, options);
                 setViewKind(next.cycle.kind);
               }}
               onBackup={backup}
               onImport={restore}
+              onCurrencyBackup={() => {
+                try {
+                  const raw = localStorage.getItem(CURRENCY_BACKUP_KEY);
+                  if (raw)
+                    downloadFile(
+                      raw,
+                      `jornada-antes-cambio-moneda-${today}.json`,
+                      "application/json",
+                    );
+                } catch (err) {
+                  setError(err.message);
+                }
+              }}
             />
           ) : tab === "Aguinaldo" ? (
             <Sac state={state} onSave={commit} today={today} />
@@ -1342,7 +1353,7 @@ export default function Home() {
               <div className="metrics">
                 <article className="income">
                   <div>
-                    <span>Ingreso estimado</span>
+                    <span>Ingreso estimado · {currencyFor(state.profile)}</span>
                     <Icon name="wallet" />
                   </div>
                   <strong>{currency(totals.amount)}</strong>

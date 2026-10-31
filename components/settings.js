@@ -15,8 +15,16 @@ import {
   PAY_MODES,
 } from "../lib/workspace.mjs";
 import Icon from "./icon";
+import CurrencyConfirmation from "./currency-confirmation";
+import { CURRENCY_BACKUP_KEY } from "../lib/currency-change.mjs";
 import { currencyFor, zoneFor, locationLabel } from "../lib/locations.mjs";
-export default function Settings({ state, onSave, onBackup, onImport }) {
+export default function Settings({
+  state,
+  onSave,
+  onBackup,
+  onImport,
+  onCurrencyBackup,
+}) {
   const currency = (n) => formatCurrency(n, currencyFor(state.profile));
   const [section, setSection] = useState(0),
     [draft, setDraft] = useState(() => structuredClone(state)),
@@ -28,7 +36,14 @@ export default function Settings({ state, onSave, onBackup, onImport }) {
       effectiveFrom: localDate(new Date(), zoneFor(state.profile)),
     })),
     [error, setError] = useState(""),
-    [saved, setSaved] = useState(false);
+    [saved, setSaved] = useState(false),
+    [currencyConfirmed, setCurrencyConfirmed] = useState(false),
+    [hasCurrencyBackup, setHasCurrencyBackup] = useState(false);
+  useEffect(() => {
+    try {
+      setHasCurrencyBackup(Boolean(localStorage.getItem(CURRENCY_BACKUP_KEY)));
+    } catch {}
+  }, [state.profile.currency]);
   useEffect(() => {
     setDraft((d) => ({
       ...d,
@@ -53,7 +68,7 @@ export default function Settings({ state, onSave, onBackup, onImport }) {
               ],
             }
           : draft;
-      onSave(next);
+      onSave(next, { confirmCurrencyCorrection: currencyConfirmed });
       setDraft(structuredClone(next));
       setSaved(true);
     } catch (err) {
@@ -92,14 +107,12 @@ export default function Settings({ state, onSave, onBackup, onImport }) {
           {section === 0 ? (
             <ProfileFields
               value={draft.profile}
-              currencyLocked={
-                state.entries.length > 0 ||
-                state.payments.length > 0 ||
-                state.sac.length > 0 ||
-                state.compensation.length > 1
-              }
               locationLocked={!!state.activeSession}
-              onChange={(v) => set("profile", v)}
+              onChange={(v) => {
+                if (currencyFor(v) !== currencyFor(draft.profile))
+                  setCurrencyConfirmed(false);
+                set("profile", v);
+              }}
             />
           ) : section === 1 ? (
             <ScheduleFields
@@ -121,6 +134,14 @@ export default function Settings({ state, onSave, onBackup, onImport }) {
             <ReminderFields
               value={draft.reminders}
               onChange={(v) => set("reminders", v)}
+            />
+          )}
+          {section === 0 && (
+            <CurrencyConfirmation
+              previous={state}
+              profile={draft.profile}
+              confirmed={currencyConfirmed}
+              onChange={setCurrencyConfirmed}
             />
           )}
           {error && (
@@ -180,6 +201,11 @@ export default function Settings({ state, onSave, onBackup, onImport }) {
               <Icon name="download" size={16} />
               Descargar copia de seguridad
             </button>
+            {hasCurrencyBackup && (
+              <button className="secondary" onClick={onCurrencyBackup}>
+                Descargar copia anterior al cambio de moneda
+              </button>
+            )}
             <label className="secondary file-button">
               Restaurar copia
               <input

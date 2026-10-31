@@ -2937,3 +2937,47 @@ select option {
     grid-column: 1/-1;
   }
 }
+.currency-confirmation {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--accent-soft);
+  padding: 20px;
+  display: grid;
+  gap: 15px;
+}
+.currency-confirmation h3 {
+  font-size: 14px;
+  color: var(--ink);
+}
+.currency-confirmation p {
+  font-size: 12px;
+  line-height: 1.9;
+}
+.currency-confirmation small {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.currency-confirmation .check {
+  align-items: flex-start;
+  font-size: 12px;
+  line-height: 1.9;
+}
+.currency-confirmation .check input {
+  margin-top: 4px;
+}
+.metrics .income > strong {
+  font-size: clamp(23px, 2.2vw, 33px);
+}
+@media (max-width: 700px) {
+  .currency-confirmation {
+    padding: 17px;
+  }
+  .currency-confirmation p,
+  .currency-confirmation small {
+    font-size: 11px;
+  }
+  .metrics article.income > strong {
+    font-size: clamp(25px, 7.8vw, 36px);
+  }
+}

@@ -92,7 +92,7 @@ test("configuración, jornadas, cobros y diseño adaptable", async ({
   console.log("PASS: SAC manual con incidencia de extras");
   await page.getByRole("button", { name: "Mis cobros", exact: true }).click();
   await page.getByLabel("Fecha dentro del período").fill("2026-10-09");
-  await page.getByLabel("Importe recibido ($)").fill("45000");
+  await page.getByLabel(/Importe recibido/).fill("45000");
   await page
     .getByRole("button", { name: "Guardar cobro", exact: true })
     .click();
@@ -339,7 +339,7 @@ test("decimales con coma en sueldo, horas, cobros y aguinaldo; faltas justificad
   assert.match(await page.locator("table").innerText(), /Falta justificada/);
   assert.match(await page.locator("table").innerText(), /Sin justificar/);
   await page.getByRole("button", { name: "Mis cobros", exact: true }).click();
-  await page.getByLabel("Importe recibido ($)").fill("12345,67");
+  await page.getByLabel(/Importe recibido/).fill("12345,67");
   await page
     .getByRole("button", { name: "Guardar cobro", exact: true })
     .click();
@@ -545,7 +545,7 @@ test("país y provincia dependientes, moneda y reloj locales; SAC argentino no s
     await page
       .getByRole("combobox", { name: "Moneda de registro", exact: true })
       .isDisabled(),
-    true,
+    false,
   );
   await page
     .getByRole("combobox", { name: "País o territorio", exact: true })
@@ -565,6 +565,10 @@ test("país y provincia dependientes, moneda y reloj locales; SAC argentino no s
       exact: true,
     })
     .selectOption("São Paulo");
+  // A country proposes its currency, but the user can explicitly keep the old unit.
+  await page
+    .getByRole("combobox", { name: "Moneda de registro", exact: true })
+    .selectOption("MXN");
   await page
     .getByRole("button", { name: "Guardar cambios", exact: true })
     .click();
@@ -700,5 +704,125 @@ test("firma del creador apunta al portfolio en bienvenida y panel, también en c
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
     true,
+  );
+});
+
+test("corrige ARS a moneda del país con confirmación, conserva valores y descarga la copia anterior", async ({
+  page,
+}, testInfo) => {
+  const { createWorkspace } = await import("../../lib/workspace.mjs");
+  const original = createWorkspace();
+  original.configured = true;
+  original.profile = {
+    ...original.profile,
+    name: "Ana",
+    country: "BR",
+    region: "São Paulo",
+    timeZone: "America/Sao_Paulo",
+    currency: "ARS",
+  };
+  original.compensation[0].amount = 200.5;
+  original.entries = [
+    {
+      id: "original",
+      date: "2026-10-09",
+      hours: 8,
+      type: "work",
+      note: "Original",
+      quantity: 0,
+    },
+  ];
+  original.payments = [
+    {
+      id: "p1",
+      start: "2026-10-01",
+      end: "2026-10-15",
+      date: "2026-10-20",
+      amount: 100.25,
+    },
+  ];
+  await page.addInitScript((value) => {
+    if (!localStorage.getItem("jornada-v2"))
+      localStorage.setItem("jornada-v2", JSON.stringify(value));
+  }, original);
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Configuración", exact: true })
+    .click();
+  const selector = page.getByRole("combobox", {
+    name: "Moneda de registro",
+    exact: true,
+  });
+  assert.equal(await selector.isEnabled(), true);
+  await selector.selectOption("BRL");
+  const confirmation = page.getByRole("checkbox", {
+    name: "Confirmo que los importes guardados ya corresponden a BRL",
+    exact: true,
+  });
+  await confirmation.waitFor();
+  await page
+    .getByRole("button", { name: "Guardar cambios", exact: true })
+    .click();
+  assert.equal(
+    await page.evaluate(
+      () => JSON.parse(localStorage.getItem("jornada-v2")).profile.currency,
+    ),
+    "ARS",
+  );
+  await confirmation.check();
+  await page
+    .getByRole("button", { name: "Guardar cambios", exact: true })
+    .click();
+  await page.getByText("Cambios guardados en este navegador.").waitFor();
+  const saved = await page.evaluate(() =>
+      JSON.parse(localStorage.getItem("jornada-v2")),
+    ),
+    backup = await page.evaluate(() =>
+      JSON.parse(localStorage.getItem("jornada-before-currency-change-v2")),
+    );
+  assert.equal(saved.profile.currency, "BRL");
+  assert.equal(saved.compensation[0].amount, 200.5);
+  assert.equal(saved.payments[0].amount, 100.25);
+  assert.deepEqual(saved.entries, original.entries);
+  assert.equal(backup.profile.currency, "ARS");
+  assert.equal(backup.compensation[0].amount, 200.5);
+  const downloadPromise = page.waitForEvent("download");
+  await page
+    .getByRole("button", {
+      name: "Descargar copia anterior al cambio de moneda",
+      exact: true,
+    })
+    .click();
+  const download = await downloadPromise,
+    path = testInfo.outputPath("moneda-anterior.json");
+  await download.saveAs(path);
+  assert.equal(
+    JSON.parse(await require("node:fs/promises").readFile(path, "utf8")).profile
+      .currency,
+    "ARS",
+  );
+  await page.getByRole("tab", { name: "Cómo te pagan", exact: true }).click();
+  await page.getByLabel("Importe en BRL").waitFor();
+  assert.match(await page.locator(".salary-history").innerText(), /BRL/);
+  await page.getByRole("button", { name: "Resumen", exact: true }).click();
+  await page
+    .getByLabel("Fecha del período", { exact: true })
+    .fill("2026-10-09");
+  assert.match(await page.locator(".metrics .income").innerText(), /BRL/);
+  assert.doesNotMatch(
+    await page.locator(".metrics .income").innerText(),
+    /ARS/,
+  );
+  await page.getByRole("button", { name: "Mis cobros", exact: true }).click();
+  await page.getByLabel("Importe recibido (BRL)").waitFor();
+  await page.reload();
+  await page
+    .getByRole("button", { name: "Configuración", exact: true })
+    .click();
+  assert.equal(
+    await page
+      .getByRole("combobox", { name: "Moneda de registro", exact: true })
+      .inputValue(),
+    "BRL",
   );
 });
