@@ -20,6 +20,8 @@ import DecimalInput from "../components/decimal-input";
 import { parseDecimal } from "../lib/decimal.mjs";
 import Setup from "../components/setup";
 import JobSwitcher from "../components/job-switcher";
+import Vacations, { VacationForm } from "../components/vacations";
+import { addVacation, removeVacation } from "../lib/vacations.mjs";
 import MonotributoNote from "../components/monotributo-note";
 import { addJob, switchJob, renameJob, jobId } from "../lib/jobs.mjs";
 import Settings from "../components/settings";
@@ -418,6 +420,9 @@ function SessionCard({
               state.entries.some(
                 (e) =>
                   e.date === today && ["vacation", "absence"].includes(e.type),
+              ) ||
+              (state.vacationPeriods || []).some(
+                (p) => p.start <= today && p.end >= today,
               )
             ) {
               setError(
@@ -605,6 +610,12 @@ function Records({ entries, onDelete, onExport, profile = {} }) {
                       <button
                         className="icon-button danger"
                         aria-label={`Eliminar jornada del ${dateLabel(e.date)}`}
+                        disabled={!!e.vacationPeriodId}
+                        title={
+                          e.vacationPeriodId
+                            ? "Gestioná el período completo desde Vacaciones"
+                            : "Eliminar jornada"
+                        }
                         onClick={() => onDelete(e.id)}
                       >
                         <Icon name="trash" size={16} />
@@ -1411,12 +1422,33 @@ function WorkspaceApp({ cloud = null }) {
                     <Icon name="calendar" size={17} />
                     Registrar ausencia
                   </button>
+                  <button
+                    className="secondary vacation-action"
+                    onClick={() => setAdding("vacation")}
+                  >
+                    <Icon name="calendar" size={17} />
+                    Registrar vacaciones
+                  </button>
                   <button className="primary" onClick={() => setAdding(true)}>
                     <Icon name="plus" size={17} />
                     Nueva jornada
                   </button>
                 </div>
               </div>
+              <Vacations
+                state={state}
+                today={today}
+                reference={reference}
+                onReference={setReference}
+                onRemove={(id) => {
+                  try {
+                    commit(removeVacation(state, id));
+                    setNotice("Período de vacaciones eliminado.");
+                  } catch (err) {
+                    setError(err.message);
+                  }
+                }}
+              />
               <section
                 className="panel settings-panel"
                 aria-label="Detalle del importe a cobrar"
@@ -1709,9 +1741,11 @@ function WorkspaceApp({ cloud = null }) {
                   ? "Lo que viene con Jornadapp Premium"
                   : closing
                     ? "Confirmá tu hora de salida"
-                    : adding === "absence"
-                      ? "Registrar una ausencia"
-                      : "Sumá una jornada"}
+                    : adding === "vacation"
+                      ? "Registrar un período de vacaciones"
+                      : adding === "absence"
+                        ? "Registrar una ausencia"
+                        : "Sumá una jornada"}
               </h2>
               <button
                 className="icon-button"
@@ -1765,6 +1799,21 @@ function WorkspaceApp({ cloud = null }) {
                   Entendido
                 </button>
               </>
+            ) : adding === "vacation" ? (
+              <VacationForm
+                state={state}
+                today={today}
+                onSave={(period) => {
+                  commit(addVacation(state, period));
+                  setAdding(false);
+                  setReference(period.start);
+                  setNotice(
+                    period.start > today
+                      ? "Vacaciones planificadas y guardadas."
+                      : "Período de vacaciones guardado.",
+                  );
+                }}
+              />
             ) : (
               <>
                 <p>

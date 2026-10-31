@@ -3530,3 +3530,101 @@ html[data-theme="dark"] .brand-mark--auto .brand-mark-dark,
 .salary-records table td {
   white-space: nowrap;
 }
+
+.vacation-action {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.vacations-panel {
+  margin-bottom: 22px;
+}
+.vacations-layout {
+  display: grid;
+  grid-template-columns: minmax(230px, 1fr) minmax(200px, 1fr);
+  gap: 24px;
+  padding: 0 24px 24px;
+}
+.vacation-month {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+  margin-bottom: 14px;
+}
+.vacation-month input {
+  width: 100%;
+}
+.vacation-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+.vacation-weekday {
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+  padding: 6px 0;
+}
+.vacation-day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex-direction: column;
+  min-height: 39px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  font-size: 12px;
+}
+.vacation-day.booked {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 800;
+}
+.vacation-day.booked > span {
+  font-size: 7px;
+  line-height: 1;
+}
+.vacation-day.today {
+  border-color: var(--accent);
+}
+.vacation-legend {
+  font-size: 11px;
+  color: var(--muted);
+}
+.vacation-legend > span {
+  color: var(--accent);
+}
+.vacation-periods {
+  max-height: 380px;
+  overflow: auto;
+}
+.vacation-periods summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 0;
+}
+.vacation-period {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  margin-top: 12px;
+}
+.vacation-period > strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 13px;
+}
+.vacation-period p {
+  font-size: 12px;
+  margin: 8px 0;
+}
+@media (max-width: 700px) {
+  .vacations-layout {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0 16px 16px;
+  }
+  .overview-toolbar .button-row {
+    flex-wrap: wrap;
+  }
+}
