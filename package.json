@@ -8,12 +8,14 @@
     "start": "next start --hostname 0.0.0.0",
     "test": "node --test --test-isolation=none tests/*.test.mjs",
     "test:e2e": "playwright test",
-    "format": "prettier --write app components lib tests playwright.config.js package.json README.md",
-    "format:check": "prettier --check app components lib tests playwright.config.js package.json README.md"
+    "format": "prettier --write app components lib tests playwright.config.js package.json README.md scripts data",
+    "format:check": "prettier --check app components lib tests playwright.config.js package.json README.md scripts data",
+    "update:locations": "node scripts/generate-locations.cjs"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "^5.3.0",
     "@fontsource-variable/manrope": "^5.3.0",
+    "@js-temporal/polyfill": "^0.5.1",
     "next": "^16.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
@@ -23,6 +25,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
+    "country-region-data": "^4.1.0",
     "prettier": "^3.9.10"
   }
 }

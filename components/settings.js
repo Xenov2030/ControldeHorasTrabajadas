@@ -9,13 +9,15 @@ import {
   SECTIONS,
 } from "./setup";
 import {
-  currency,
+  currency as formatCurrency,
   dateLabel,
   localDate,
   PAY_MODES,
 } from "../lib/workspace.mjs";
 import Icon from "./icon";
+import { currencyFor, zoneFor, locationLabel } from "../lib/locations.mjs";
 export default function Settings({ state, onSave, onBackup, onImport }) {
+  const currency = (n) => formatCurrency(n, currencyFor(state.profile));
   const [section, setSection] = useState(0),
     [draft, setDraft] = useState(() => structuredClone(state)),
     [salary, setSalary] = useState(() => ({
@@ -23,7 +25,7 @@ export default function Settings({ state, onSave, onBackup, onImport }) {
         b.effectiveFrom.localeCompare(a.effectiveFrom),
       )[0],
       id: "",
-      effectiveFrom: localDate(),
+      effectiveFrom: localDate(new Date(), zoneFor(state.profile)),
     })),
     [error, setError] = useState(""),
     [saved, setSaved] = useState(false);
@@ -84,12 +86,19 @@ export default function Settings({ state, onSave, onBackup, onImport }) {
               ? "Registrar un aumento o nueva condición"
               : SECTIONS[section]}
           </h2>
-          <p>Configuración personal · Argentina, Mendoza</p>
+          <p>Configuración personal · {locationLabel(state.profile)}</p>
         </div>
         <form onSubmit={submit}>
           {section === 0 ? (
             <ProfileFields
               value={draft.profile}
+              currencyLocked={
+                state.entries.length > 0 ||
+                state.payments.length > 0 ||
+                state.sac.length > 0 ||
+                state.compensation.length > 1
+              }
+              locationLocked={!!state.activeSession}
               onChange={(v) => set("profile", v)}
             />
           ) : section === 1 ? (
@@ -98,7 +107,11 @@ export default function Settings({ state, onSave, onBackup, onImport }) {
               onChange={(v) => set("schedule", v)}
             />
           ) : section === 2 ? (
-            <SalaryFields value={salary} onChange={setSalary} />
+            <SalaryFields
+              value={salary}
+              onChange={setSalary}
+              currencyCode={currencyFor(state.profile)}
+            />
           ) : section === 3 ? (
             <CycleFields
               value={draft.cycle}

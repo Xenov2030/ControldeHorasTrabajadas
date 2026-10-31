@@ -1,6 +1,6 @@
 # Jornada · Control de horas trabajadas
 
-Aplicación Next.js en español para registrar jornadas y estimar ingresos en Argentina, comenzando por Mendoza. La versión actual es personal y local: todavía no ofrece cuentas, base de datos remota ni servicios comerciales activos.
+Aplicación Next.js en español para registrar jornadas y estimar ingresos con selección geográfica para Latinoamérica. La configuración original de Argentina y Mendoza se conserva para los perfiles existentes. La versión actual es personal y local: todavía no ofrece cuentas, base de datos remota ni servicios comerciales activos.
 
 ## Desarrollo
 
@@ -44,6 +44,9 @@ Vercel puede detectar Next.js en la raíz. Este cambio no configura ni publica e
 
 ## Funciones implementadas
 
+- Catálogo local de 23 países y Puerto Rico como territorio, con 507 divisiones administrativas. Incluye los 20 países de América Latina y cobertura regional adicional para Belice, Guyana y Surinam. Cada país muestra provincia, estado, departamento, región o municipio según corresponda. Datos y licencia: [data/README.md](data/README.md).
+- Zona horaria IANA configurable por país: reloj, fecha de registro y recordatorios usan la selección; se evita asumir UTC-3 para toda Latinoamérica.
+- Moneda de registro configurable antes de cargar registros. Al cambiar de país con registros existentes se conserva la moneda, sin conversiones ni cambios de importes históricos.
 - Asistente inicial de cinco pasos: perfil, horario semanal, modalidad e importe, cierres y cobros, recordatorios.
 - Identidad visual azul noche, violeta y tonos cálidos, con fuentes locales, reloj de fichaje, resumen semanal y navegación propia para celular. Tema claro, oscuro o según el dispositivo, con preferencia persistida.
 - Importes, cantidades y horas aceptan coma o punto decimal; por ejemplo, `3500,50`, `3500.50` y `8,5`. También se aceptan miles con parte decimal explícita, como `1.234,50`; un único separador siempre se interpreta como decimal.
@@ -61,7 +64,7 @@ Vercel puede detectar Next.js en la raíz. Este cambio no configura ni publica e
 
 ## Cálculos y límites actuales
 
-Los valores iniciales son ejemplos editables. No se cargan ni analizan recibos de sueldo. Los resultados son estimaciones, no liquidaciones legales ni importes netos confirmados.
+La selección geográfica no aplica automáticamente legislación o feriados del país. El aguinaldo disponible sigue siendo el SAC argentino y su pantalla no ejecuta esa fórmula en países distintos de Argentina. Los valores iniciales son ejemplos editables. No se cargan ni analizan recibos de sueldo. Los resultados son estimaciones, no liquidaciones legales ni importes netos confirmados.
 
 Las horas extra se calculan según el excedente diario del horario pactado, con un multiplicador por condición salarial. No se aplican automáticamente límites semanales, convenios, recargos nocturnos, distintos recargos según horario ni descuentos, aportes o retenciones. Los feriados son manuales y usan su propio multiplicador, sin acumular extras.
 
@@ -89,3 +92,7 @@ La aplicación no sobrescribe datos que no puede validar. Los archivos de copia 
 - Suscripciones, precios y límites de Premium.
 
 La pantalla Premium informa qué funciones están previstas y no activa pagos ni simula integraciones.
+
+## Crédito del creador
+
+El componente `CreatorCredit` está preparado para mostrar una firma discreta con enlace al portfolio en el pie del panel y en la configuración inicial. Su identidad pública se define en `lib/branding.mjs`. La firma actual es «Hecho por Nicolás» y enlaza a https://nicolasaguirrescode.com/. El enlace utiliza HTTPS y abre el portfolio en una pestaña nueva.

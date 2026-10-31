@@ -467,3 +467,238 @@ test("diseño claro y oscuro conserva la navegación en móvil, tablet y PC", as
   await page.keyboard.press("Escape");
   assert.equal(await page.getByRole("dialog").count(), 0);
 });
+
+test("país y provincia dependientes, moneda y reloj locales; SAC argentino no se aplica a México", async ({
+  page,
+}) => {
+  await page.clock.install({ time: new Date("2026-10-30T17:30:00Z") });
+  await page.goto("/");
+  await page.getByLabel("¿Cómo te llamás?").fill("Luis");
+  const country = page.getByRole("combobox", {
+      name: "País o territorio",
+      exact: true,
+    }),
+    region = page.getByRole("combobox", {
+      name: "Provincia, estado o departamento",
+      exact: true,
+    });
+  assert.equal(await country.locator("option").count(), 24);
+  await country.selectOption("MX");
+  assert.equal(await region.inputValue(), "");
+  assert.equal(await region.locator("option").count(), 33);
+  assert.equal(
+    await page
+      .getByRole("combobox", { name: "Moneda de registro", exact: true })
+      .inputValue(),
+    "MXN",
+  );
+  await region.selectOption("Oaxaca");
+  await page.getByRole("button", { name: "Continuar", exact: true }).click();
+  await page.getByRole("button", { name: "Continuar", exact: true }).click();
+  await page.getByLabel("Importe en MXN").fill("350,50");
+  await page.getByRole("button", { name: "Continuar", exact: true }).click();
+  await page.getByRole("button", { name: "Continuar", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Empezar mi registro", exact: true })
+    .click();
+  await page
+    .getByRole("heading", { name: "Tu esfuerzo, en números." })
+    .waitFor();
+  assert.match(
+    await page.locator(".workspace-card").innerText(),
+    /México · Oaxaca/,
+  );
+  assert.equal(
+    await page.locator(".desktop-session .session-time").innerText(),
+    "11:30",
+  );
+  assert.match(await page.locator(".metrics .income").innerText(), /MXN/);
+  await page
+    .getByRole("button", { name: "Registrar entrada", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Registrar salida", exact: true })
+    .first()
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByLabel("Entrada", { exact: true })
+    .fill("05:00");
+  await page
+    .getByRole("dialog")
+    .getByLabel("Salida real", { exact: true })
+    .fill("11:00");
+  await page
+    .getByRole("button", { name: "Confirmar salida real", exact: true })
+    .click();
+  let saved = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("jornada-v2")),
+  );
+  assert.equal(saved.profile.country, "MX");
+  assert.equal(saved.profile.region, "Oaxaca");
+  assert.equal(saved.profile.currency, "MXN");
+  assert.equal(saved.entries[0].hours, 6);
+  await page
+    .getByRole("button", { name: "Configuración", exact: true })
+    .click();
+  assert.equal(
+    await page
+      .getByRole("combobox", { name: "Moneda de registro", exact: true })
+      .isDisabled(),
+    true,
+  );
+  await page
+    .getByRole("combobox", { name: "País o territorio", exact: true })
+    .selectOption("BR");
+  assert.equal(
+    await page
+      .getByRole("combobox", {
+        name: "Provincia, estado o departamento",
+        exact: true,
+      })
+      .inputValue(),
+    "",
+  );
+  await page
+    .getByRole("combobox", {
+      name: "Provincia, estado o departamento",
+      exact: true,
+    })
+    .selectOption("São Paulo");
+  await page
+    .getByRole("button", { name: "Guardar cambios", exact: true })
+    .click();
+  await page.getByText("Cambios guardados en este navegador.").waitFor();
+  saved = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("jornada-v2")),
+  );
+  assert.equal(saved.profile.country, "BR");
+  assert.equal(saved.profile.currency, "MXN");
+  assert.equal(saved.entries[0].hours, 6);
+  await page.reload();
+  await page
+    .getByRole("heading", { name: "Tu esfuerzo, en números." })
+    .waitFor();
+  assert.match(
+    await page.locator(".workspace-card").innerText(),
+    /Brasil · São Paulo/,
+  );
+  await page.getByRole("button", { name: "Aguinaldo", exact: true }).click();
+  await page
+    .getByRole("heading", { name: "Aguinaldo según tu país" })
+    .waitFor();
+  assert.equal(await page.locator(".sac-form").count(), 0);
+});
+
+test("restaurar una copia internacional reemplaza el espacio completo sin convertir importes", async ({
+  page,
+}) => {
+  const { createWorkspace } = await import("../../lib/workspace.mjs");
+  const old = createWorkspace();
+  old.configured = true;
+  old.profile.name = "Ana";
+  old.entries = [
+    {
+      id: "old",
+      date: "2026-10-09",
+      hours: 8,
+      type: "work",
+      note: "Anterior",
+      quantity: 0,
+    },
+  ];
+  const incoming = createWorkspace();
+  incoming.configured = true;
+  incoming.profile = {
+    ...incoming.profile,
+    name: "Luis",
+    country: "MX",
+    region: "Oaxaca",
+    timeZone: "America/Mexico_City",
+    currency: "MXN",
+  };
+  incoming.entries = [
+    {
+      id: "mexico",
+      date: "2026-10-09",
+      hours: 6,
+      type: "work",
+      note: "Copia México",
+      quantity: 0,
+    },
+  ];
+  incoming.compensation[0].amount = 350.5;
+  await page.addInitScript((value) => {
+    if (!localStorage.getItem("jornada-v2"))
+      localStorage.setItem("jornada-v2", JSON.stringify(value));
+  }, old);
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Configuración", exact: true })
+    .click();
+  page.on("dialog", (d) => d.accept());
+  await page.locator("input[type=file]").setInputFiles({
+    name: "copia-mexico.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(incoming)),
+  });
+  await page
+    .getByRole("status")
+    .filter({ hasText: "Copia restaurada." })
+    .waitFor();
+  const saved = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("jornada-v2")),
+  );
+  assert.equal(saved.profile.currency, "MXN");
+  assert.equal(saved.profile.region, "Oaxaca");
+  assert.equal(saved.entries.length, 1);
+  assert.equal(saved.entries[0].id, "mexico");
+  assert.equal(saved.compensation[0].amount, 350.5);
+});
+
+test("firma del creador apunta al portfolio en bienvenida y panel, también en celular", async ({
+  page,
+}) => {
+  await page.goto("/");
+  let credit = page.getByRole("link", {
+    name: "Portfolio de Nicolás (abre en otra pestaña)",
+    exact: true,
+  });
+  await credit.waitFor();
+  assert.equal(
+    await credit.getAttribute("href"),
+    "https://nicolasaguirrescode.com/",
+  );
+  assert.equal(await credit.getAttribute("target"), "_blank");
+  assert.match(await credit.getAttribute("rel"), /noopener/);
+  const { createWorkspace } = await import("../../lib/workspace.mjs");
+  const s = createWorkspace();
+  s.configured = true;
+  s.profile.name = "Ana";
+  await page.evaluate(
+    (value) => localStorage.setItem("jornada-v2", JSON.stringify(value)),
+    s,
+  );
+  await page.reload();
+  await page
+    .getByRole("heading", { name: "Tu esfuerzo, en números." })
+    .waitFor();
+  credit = page.getByRole("link", {
+    name: "Portfolio de Nicolás (abre en otra pestaña)",
+    exact: true,
+  });
+  assert.equal(await credit.isVisible(), true);
+  assert.equal(
+    await credit.getAttribute("href"),
+    "https://nicolasaguirrescode.com/",
+  );
+  await page.setViewportSize({ width: 320, height: 844 });
+  await credit.scrollIntoViewIfNeeded();
+  assert.equal(await credit.isVisible(), true);
+  assert.equal(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+    true,
+  );
+});

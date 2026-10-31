@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
-import { currency, sacEstimate } from "../lib/workspace.mjs";
+import { currency as formatCurrency, sacEstimate } from "../lib/workspace.mjs";
 import Icon from "./icon";
+import { countryFor, currencyFor } from "../lib/locations.mjs";
 import DecimalInput from "./decimal-input";
 import { parseDecimal } from "../lib/decimal.mjs";
 const monthName = (n) =>
@@ -9,6 +10,7 @@ const monthName = (n) =>
     new Date(Date.UTC(2026, n, 1)),
   );
 export default function Sac({ state, onSave, today }) {
+  const currency = (n) => formatCurrency(n, currencyFor(state.profile));
   const [year, setYear] = useState(Number(today.slice(0, 4))),
     [half, setHalf] = useState(Number(today.slice(5, 7)) <= 6 ? 1 : 2),
     [message, setMessage] = useState("");
@@ -51,6 +53,21 @@ export default function Sac({ state, onSave, today }) {
       setMessage(err.message);
     }
   }
+  if (countryFor(state.profile).code !== "AR")
+    return (
+      <section className="panel settings-panel">
+        <span className="icon-tile">
+          <Icon name="gift" />
+        </span>
+        <h2>Aguinaldo según tu país</h2>
+        <p>
+          Tu ubicación es {countryFor(state.profile).name}. La fórmula
+          disponible actualmente es el SAC de Argentina y no la aplicamos
+          automáticamente a otros países. Podés seguir registrando jornadas y
+          cobros; el cálculo local de aguinaldo queda pendiente.
+        </p>
+      </section>
+    );
   return (
     <>
       <div className="notice">

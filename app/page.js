@@ -1,6 +1,15 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Icon from "../components/icon";
+import CreatorCredit from "../components/creator-credit";
+import {
+  countryFor,
+  currencyFor,
+  zoneFor,
+  locationLabel,
+  localClock,
+  localInstant,
+} from "../lib/locations.mjs";
 import DecimalInput from "../components/decimal-input";
 import { parseDecimal } from "../lib/decimal.mjs";
 import Setup from "../components/setup";
@@ -10,7 +19,7 @@ import {
   createWorkspace,
   validateWorkspace,
   migrateLegacy,
-  localDate,
+  localDate as dateInZone,
   parseDate,
   addDays,
   isoDate,
@@ -19,7 +28,7 @@ import {
   periodTotals,
   scheduleHours,
   compensationAt,
-  currency,
+  currency as formatCurrency,
   dateLabel,
   ENTRY_TYPES,
   PAY_MODES,
@@ -35,13 +44,6 @@ const NAV = [
   ["Mis cobros", "wallet"],
   ["Configuración", "settings"],
 ];
-const clockTime = (now = new Date()) =>
-  new Intl.DateTimeFormat("es-AR", {
-    timeZone: "America/Argentina/Mendoza",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).format(now);
 function downloadFile(content, name, type) {
   const url = URL.createObjectURL(new Blob([content], { type }));
   const link = document.createElement("a");
@@ -64,6 +66,8 @@ function EntryForm({
   today,
   initialKind = "work",
 }) {
+  const localDate = (d) => dateInZone(d, zoneFor(state.profile));
+  const clockTime = (d) => localClock(d, zoneFor(state.profile));
   const session = state.activeSession;
   const [kind, setKind] = useState(initialKind),
     [method, setMethod] = useState("times"),
@@ -95,7 +99,7 @@ function EntryForm({
           throw new Error(
             "La salida debe ser el día de entrada o el siguiente. Corregí la fecha real; esta versión admite turnos de hasta 24 horas.",
           );
-        if (new Date(`${exitDate}T${end}:00-03:00`).getTime() > Date.now())
+        if (localInstant(exitDate, end, zoneFor(state.profile)) > Date.now())
           throw new Error("La salida real no puede estar en el futuro.");
       }
       const overnight = closing ? exitDate !== date : nextDay;
@@ -362,6 +366,8 @@ function SessionCard({
   safeCommit,
   setAdding,
 }) {
+  const localDate = (d) => dateInZone(d, zoneFor(state.profile));
+  const clockTime = (d) => localClock(d, zoneFor(state.profile));
   return (
     <section className="panel session-card">
       <div className="card-kicker">
@@ -375,7 +381,9 @@ function SessionCard({
           <i />
         </div>
         <span className="clock-caption">
-          {state.activeSession ? "ENTRADA REGISTRADA" : "HORA LOCAL · MENDOZA"}
+          {state.activeSession
+            ? "ENTRADA REGISTRADA"
+            : `HORA LOCAL · ${countryFor(state.profile).name.toUpperCase()}`}
         </span>
         <span className="session-time">
           {state.activeSession
@@ -439,7 +447,8 @@ function SessionCard({
 }
 
 function WeeklyChart({ state, end }) {
-  const latest = localDate() < end ? localDate() : end;
+  const today = dateInZone(new Date(), zoneFor(state.profile));
+  const latest = today < end ? today : end;
   const dates = Array.from({ length: 7 }, (_, i) => addDays(latest, i - 6)),
     totals = dates.map((d) => periodTotals(state, d, d)),
     max = Math.max(10, ...totals.map((t) => t.workedHours));
@@ -515,7 +524,8 @@ function WeeklyChart({ state, end }) {
     </section>
   );
 }
-function Records({ entries, onDelete, onExport }) {
+function Records({ entries, onDelete, onExport, profile = {} }) {
+  const currency = (n) => formatCurrency(n, currencyFor(profile));
   return (
     <section className="panel records">
       <div className="panel-heading split">
@@ -610,12 +620,14 @@ function Records({ entries, onDelete, onExport }) {
         </div>
       )}
       <div className="record-footer">
-        {entries.length} registros en el período<span>Argentina · Mendoza</span>
+        {entries.length} registros en el período
+        <span>{locationLabel(profile)}</span>
       </div>
     </section>
   );
 }
 function Payments({ state, onSave, today }) {
+  const currency = (n) => formatCurrency(n, currencyFor(state.profile));
   const [reference, setReference] = useState(today),
     [error, setError] = useState("");
   const [start, end] = bounds(reference, state.cycle),
@@ -700,7 +712,9 @@ function Payments({ state, onSave, today }) {
                 />
               </label>
               <label>
-                Importe recibido ($)
+                {currencyFor(state.profile) === "ARS"
+                  ? "Importe recibido ($)"
+                  : `Importe recibido (${currencyFor(state.profile)})`}
                 <DecimalInput
                   name="amount"
 
@@ -774,6 +788,8 @@ export default function Home() {
     [reminder, setReminder] = useState(null),
     [dismissed, setDismissed] = useState(""),
     [premium, setPremium] = useState(false);
+  const localDate = (d) => dateInZone(d, zoneFor(state?.profile));
+  const currency = (n) => formatCurrency(n, currencyFor(state?.profile));
   const modalRef = useRef(null),
     returnFocus = useRef(null);
   useEffect(() => {
@@ -789,6 +805,7 @@ export default function Home() {
       setState(next);
       setShowSetup(!next.configured);
       setViewKind(next.cycle.kind);
+      setReference(dateInZone(new Date(), zoneFor(next.profile)));
     } catch {
       setState(createWorkspace());
       setStorageBlocked(true);
@@ -796,7 +813,6 @@ export default function Home() {
         "Los datos locales no pudieron leerse. No los sobrescribimos. Podés descargar el archivo original para recuperarlo.",
       );
     }
-    setReference(localDate());
     setNow(new Date());
     const timer = setInterval(() => setNow(new Date()), 15000);
     return () => clearInterval(timer);
@@ -860,12 +876,32 @@ export default function Home() {
       returnFocus.current?.focus();
     };
   }, [hasModal]);
-  function commit(next) {
+  function commit(next, { replaceWorkspace = false } = {}) {
     if (storageBlocked)
       throw new Error(
         "El almacenamiento está bloqueado para proteger los datos anteriores.",
       );
     validateWorkspace(next);
+    if (
+      !replaceWorkspace &&
+      state &&
+      (state.entries.length ||
+        state.payments.length ||
+        state.sac.length ||
+        state.compensation.length > 1) &&
+      currencyFor(next.profile) !== currencyFor(state.profile)
+    )
+      throw new Error(
+        "La moneda de este espacio ya tiene registros. Cambiar de país no convierte los importes históricos.",
+      );
+    if (
+      !replaceWorkspace &&
+      state?.activeSession &&
+      zoneFor(next.profile) !== zoneFor(state.profile)
+    )
+      throw new Error(
+        "Cerrá la jornada activa antes de cambiar la zona horaria.",
+      );
     try {
       localStorage.setItem(STORAGE, JSON.stringify(next));
     } catch {
@@ -1000,7 +1036,7 @@ export default function Home() {
         )
       )
         return;
-      commit(next);
+      commit(next, { replaceWorkspace: true });
       setNotice("Copia restaurada.");
       setTab("Resumen");
       setShowSetup(!next.configured);
@@ -1077,7 +1113,7 @@ export default function Home() {
             <Icon name="user" size={17} />
           </span>
           <div>
-            Personal<small>Argentina · Mendoza</small>
+            Personal<small>{locationLabel(state.profile)}</small>
           </div>
           <span className="green-dot" />
         </div>
@@ -1408,6 +1444,7 @@ export default function Home() {
                       </button>
                     </div>
                     <Records
+                      profile={state.profile}
                       entries={selected}
                       onExport={exportCsv}
                       onDelete={(id) => {
@@ -1467,6 +1504,7 @@ export default function Home() {
                     </button>
                   </div>
                   <Records
+                    profile={state.profile}
                     entries={selected}
                     onExport={exportCsv}
                     onDelete={(id) => {
@@ -1498,8 +1536,9 @@ export default function Home() {
           <footer>
             <span>Hecho para que tu tiempo tenga valor.</span>
             <span>
-              Argentina · Mendoza <i /> Versión en desarrollo
+              {locationLabel(state.profile)} <i /> Versión en desarrollo
             </span>
+            <CreatorCredit />
           </footer>
         </div>
       </main>

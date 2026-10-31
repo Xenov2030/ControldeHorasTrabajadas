@@ -3,6 +3,15 @@ import { useState } from "react";
 import { DAYS, PAY_MODES, scheduleHours } from "../lib/workspace.mjs";
 import Icon from "./icon";
 import DecimalInput from "./decimal-input";
+import {
+  COUNTRIES,
+  CURRENCIES,
+  countryFor,
+  zoneFor,
+  currencyFor,
+  zoneLabel,
+} from "../lib/locations.mjs";
+import CreatorCredit from "./creator-credit";
 export const SECTIONS = [
   "Tu perfil",
   "Tus horarios",
@@ -15,7 +24,24 @@ const presets = [
   ["L–V 8 h · S 4 h", [8, 8, 8, 8, 8, 4, 0]],
   ["L–V 8 h", [8, 8, 8, 8, 8, 0, 0]],
 ];
-export function ProfileFields({ value, onChange }) {
+export function ProfileFields({
+  value,
+  onChange,
+  currencyLocked = false,
+  locationLocked = false,
+}) {
+  const selected = countryFor(value);
+  function changeCountry(code) {
+    const country = COUNTRIES.find((c) => c.code === code);
+    onChange({
+      ...value,
+      country: code,
+      region: "",
+      timeZone: country.timeZone,
+      currency: currencyLocked ? currencyFor(value) : country.currency,
+    });
+  }
+
   return (
     <div className="form-grid">
       <label>
@@ -31,14 +57,81 @@ export function ProfileFields({ value, onChange }) {
         />
       </label>
       <label>
-        Provincia
+        País o territorio
         <select
-          value={value.region}
-          onChange={(e) => onChange({ ...value, region: e.target.value })}
+          aria-label="País o territorio"
+          value={selected.code}
+          onChange={(e) => changeCountry(e.target.value)}
+          disabled={locationLocked}
+          required
         >
-          <option>Mendoza</option>
+          {COUNTRIES.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.name}
+            </option>
+          ))}
         </select>
       </label>
+      <label>
+        {selected.regionLabel}
+        <select
+          aria-label="Provincia, estado o departamento"
+          value={value.region}
+          onChange={(e) => onChange({ ...value, region: e.target.value })}
+          disabled={locationLocked}
+          required
+        >
+          <option value="">Elegí una opción</option>
+          {selected.regions.map((region) => (
+            <option key={region} value={region}>
+              {region}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        Zona horaria
+        <select
+          aria-label="Zona horaria"
+          value={zoneFor(value)}
+          onChange={(e) => onChange({ ...value, timeZone: e.target.value })}
+          disabled={locationLocked}
+          required
+        >
+          {selected.timeZones.map((zone) => (
+            <option key={zone} value={zone}>
+              {zoneLabel(zone)}
+            </option>
+          ))}
+        </select>
+        <small>Confirmala si tu país tiene más de una zona.</small>
+      </label>
+      <label>
+        Moneda de registro
+        <select
+          aria-label="Moneda de registro"
+          value={currencyFor(value)}
+          onChange={(e) => onChange({ ...value, currency: e.target.value })}
+          disabled={currencyLocked}
+          required
+        >
+          {CURRENCIES.map((code) => (
+            <option key={code} value={code}>
+              {code}
+            </option>
+          ))}
+        </select>
+        <small>
+          {currencyLocked
+            ? "Se conserva la moneda de tus registros. Cambiar de país no convierte importes."
+            : "Los importes se registran en esta moneda; no realizamos conversiones."}
+        </small>
+      </label>
+      {locationLocked && (
+        <p className="field-help wide">
+          Cerrá la jornada activa antes de cambiar tu ubicación o zona horaria.
+        </p>
+      )}
       <label>
         Fecha de ingreso al trabajo <span className="optional">Opcional</span>
         <input
@@ -62,8 +155,9 @@ export function ProfileFields({ value, onChange }) {
         </select>
       </label>
       <p className="field-help wide">
-        Argentina · Zona horaria de Mendoza. No necesitás subir recibos ni
-        documentos personales.
+        La ubicación no activa leyes laborales ni feriados automáticos. Las
+        reglas de pago se configuran por separado. No necesitás subir
+        documentos.
       </p>
     </div>
   );
@@ -179,7 +273,12 @@ export function ScheduleFields({ value, onChange }) {
     </>
   );
 }
-export function SalaryFields({ value, onChange, initial = false }) {
+export function SalaryFields({
+  value,
+  onChange,
+  initial = false,
+  currencyCode = "ARS",
+}) {
   const set = (key, v) => onChange({ ...value, [key]: v });
   return (
     <div className="form-grid">
@@ -197,7 +296,9 @@ export function SalaryFields({ value, onChange, initial = false }) {
         </select>
       </label>
       <label>
-        Importe en pesos argentinos
+        {currencyCode === "ARS"
+          ? "Importe en pesos argentinos"
+          : `Importe en ${currencyCode}`}
         <DecimalInput
           name="amount"
 
@@ -584,6 +685,13 @@ export default function Setup({ state, onSave, onCancel }) {
           {step === 0 ? (
             <ProfileFields
               value={draft.profile}
+              currencyLocked={
+                draft.entries.length > 0 ||
+                draft.payments.length > 0 ||
+                draft.sac.length > 0 ||
+                draft.compensation.length > 1
+              }
+              locationLocked={!!draft.activeSession}
               onChange={(v) => set("profile", v)}
             />
           ) : step === 1 ? (
@@ -594,6 +702,7 @@ export default function Setup({ state, onSave, onCancel }) {
           ) : step === 2 ? (
             <SalaryFields
               initial
+              currencyCode={currencyFor(draft.profile)}
               value={draft.compensation[0]}
               onChange={(v) =>
                 set("compensation", [v, ...draft.compensation.slice(1)])
@@ -638,6 +747,7 @@ export default function Setup({ state, onSave, onCancel }) {
             </button>
           </div>
         </form>
+        <CreatorCredit />
       </main>
     </div>
   );
