@@ -45,7 +45,7 @@ Vercel puede detectar Next.js en la raíz. Este cambio no configura ni publica e
 ## Funciones implementadas
 
 - Asistente inicial de cinco pasos: perfil, horario semanal, modalidad e importe, cierres y cobros, recordatorios.
-- Diseño renovado con fuentes locales, mejor jerarquía visual y botones accesibles en PC y celular. Tema claro, oscuro o según el dispositivo, con preferencia persistida.
+- Identidad visual azul noche, violeta y tonos cálidos, con fuentes locales, reloj de fichaje, resumen semanal y navegación propia para celular. Tema claro, oscuro o según el dispositivo, con preferencia persistida.
 - Importes, cantidades y horas aceptan coma o punto decimal; por ejemplo, `3500,50`, `3500.50` y `8,5`. También se aceptan miles con parte decimal explícita, como `1.234,50`; un único separador siempre se interpreta como decimal.
 - Registro de faltas justificadas y sin justificar, con motivo opcional y condición paga/sin pago independiente. Las faltas no suman horas trabajadas. Para sueldo fijo, un descuento solo se aplica si el usuario ingresa su importe manualmente.
 - Entrada activa y confirmación de salida real. Carga manual por horarios o por total de horas, con descansos, turnos nocturnos, feriados y vacaciones.

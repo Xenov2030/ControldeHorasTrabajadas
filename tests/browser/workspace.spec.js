@@ -130,6 +130,7 @@ test("configuración, jornadas, cobros y diseño adaptable", async ({
   await page.screenshot({
     path: testInfo.outputPath("desktop.png"),
     fullPage: true,
+    animations: "disabled",
   });
   await page.setViewportSize({ width: 390, height: 844 });
   assert.ok(await page.locator(".mobile-nav").isVisible());
@@ -146,6 +147,7 @@ test("configuración, jornadas, cobros y diseño adaptable", async ({
   await page.screenshot({
     path: testInfo.outputPath("mobile-dark.png"),
     fullPage: false,
+    animations: "disabled",
   });
   console.log("PASS: versión móvil oscura sin desbordamiento horizontal");
   await page.getByRole("button", { name: "Jornadas", exact: true }).click();
@@ -362,6 +364,7 @@ test("decimales con coma en sueldo, horas, cobros y aguinaldo; faltas justificad
   await page.screenshot({
     path: testInfo.outputPath("nuevo-diseno-pc.png"),
     fullPage: true,
+    animations: "disabled",
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page
@@ -377,6 +380,7 @@ test("decimales con coma en sueldo, horas, cobros y aguinaldo; faltas justificad
   await page.screenshot({
     path: testInfo.outputPath("nuevo-diseno-celular.png"),
     fullPage: true,
+    animations: "disabled",
   });
   await page
     .getByRole("button", { name: "Registrar ausencia", exact: true })
@@ -384,6 +388,7 @@ test("decimales con coma en sueldo, horas, cobros y aguinaldo; faltas justificad
   await page.screenshot({
     path: testInfo.outputPath("ausencia-celular.png"),
     fullPage: true,
+    animations: "disabled",
   });
   assert.equal(
     await page.evaluate(
@@ -391,4 +396,74 @@ test("decimales con coma en sueldo, horas, cobros y aguinaldo; faltas justificad
     ),
     true,
   );
+});
+
+test("diseño claro y oscuro conserva la navegación en móvil, tablet y PC", async ({
+  page,
+}) => {
+  const { createWorkspace } = await import("../../lib/workspace.mjs");
+  const s = createWorkspace();
+  s.configured = true;
+  s.profile.name = "María";
+  s.profile.theme = "light";
+  await page.addInitScript((value) => {
+    if (!localStorage.getItem("jornada-v2"))
+      localStorage.setItem("jornada-v2", JSON.stringify(value));
+  }, s);
+  await page.goto("/");
+  await page
+    .getByRole("heading", { name: "Tu esfuerzo, en números." })
+    .waitFor();
+  for (const width of [320, 390, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const theme of ["light", "dark"]) {
+      await page
+        .locator(".topbar")
+        .getByRole("combobox", { name: "Apariencia", exact: true })
+        .selectOption(theme);
+      assert.equal(
+        await page.locator("html").getAttribute("data-theme"),
+        theme,
+      );
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+        true,
+        `Desbordamiento a ${width}px, tema ${theme}`,
+      );
+      assert.equal(
+        await page
+          .getByRole("button", { name: "Registrar entrada", exact: true })
+          .isVisible(),
+        true,
+      );
+    }
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Perfil", exact: true }).click();
+  await page.getByRole("tab", { name: "Tus horarios", exact: true }).click();
+  assert.equal(
+    await page.getByLabel("Entrada Lunes", { exact: true }).isVisible(),
+    true,
+  );
+  assert.equal(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+    true,
+  );
+  await page.getByRole("button", { name: "Jornadas", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Registrar ausencia", exact: true })
+    .click();
+  assert.equal(
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Guardar ausencia", exact: true })
+      .isVisible(),
+    true,
+  );
+  await page.keyboard.press("Escape");
+  assert.equal(await page.getByRole("dialog").count(), 0);
 });

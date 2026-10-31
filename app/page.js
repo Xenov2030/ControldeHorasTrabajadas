@@ -368,11 +368,21 @@ function SessionCard({
         <i className={state.activeSession ? "green-dot" : "quiet-dot"} />
         Tu jornada de hoy
       </div>
-      <span className="session-time">
-        {state.activeSession
-          ? clockTime(new Date(state.activeSession.startedAt))
-          : clockTime(now)}
-      </span>
+      <div className="clock-face">
+        <div className="clock-orbit" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </div>
+        <span className="clock-caption">
+          {state.activeSession ? "ENTRADA REGISTRADA" : "HORA LOCAL · MENDOZA"}
+        </span>
+        <span className="session-time">
+          {state.activeSession
+            ? clockTime(new Date(state.activeSession.startedAt))
+            : clockTime(now)}
+        </span>
+      </div>
       <p>
         {state.activeSession
           ? `Entrada registrada · ${dateLabel(localDate(new Date(state.activeSession.startedAt)))}`
@@ -439,6 +449,15 @@ function WeeklyChart({ state, end }) {
         <div>
           <h2>Así viene tu semana</h2>
           <p>Últimos siete días hasta el {dateLabel(latest)}</p>
+        </div>
+        <div className="chart-insight">
+          <strong>
+            {numberLabel.format(
+              totals.reduce((sum, t) => sum + t.workedHours, 0),
+            )}
+            <small> h</small>
+          </strong>
+          <span>en estos 7 días</span>
         </div>
         <div className="legend">
           <span>
@@ -1051,6 +1070,7 @@ export default function Home() {
         <a className="brand" href="/">
           <Icon name="clock" size={30} /> jornada<span>.</span>
         </a>
+        <div className="brand-caption">TU TIEMPO, BIEN CONTADO.</div>
         <div className="workspace-label">TU ESPACIO</div>
         <div className="workspace-card">
           <span className="avatar">
@@ -1101,7 +1121,11 @@ export default function Home() {
       </aside>
       <main className="main">
         <header className="topbar">
-          <span>
+          <a href="/" className="mobile-wordmark">
+            <Icon name="clock" size={22} />
+            jornada<span>.</span>
+          </a>
+          <span className="breadcrumb">
             Mi espacio <span className="slash">/</span>
             <strong>{tab}</strong>
           </span>
@@ -1135,13 +1159,28 @@ export default function Home() {
         </header>
         <div className="content">
           <div className="heading">
-            <div>
+            <div className="hero-orbit" aria-hidden="true">
+              <span />
+              <span />
+              <i />
+              <b>j.</b>
+            </div>
+            <div className="hero-copy">
               <div className="eyebrow">
                 {tab === "Resumen"
                   ? `HOLA, ${state.profile.name.toUpperCase() || "BIENVENIDO"}`
                   : "TU TIEMPO, BAJO CONTROL"}
               </div>
-              <h1>{tab === "Resumen" ? "Tu esfuerzo, en números." : tab}</h1>
+              <h1>
+                {tab === "Resumen" ? (
+                  <>
+                    Tu esfuerzo,{" "}
+                    <span className="heading-accent">en números.</span>
+                  </>
+                ) : (
+                  tab
+                )}
+              </h1>
               <p>
                 {tab === "Resumen"
                   ? "Tus horas y tus ingresos, en un solo lugar."
@@ -1244,7 +1283,10 @@ export default function Home() {
               )}
               <div className="overview-toolbar">
                 <div>
-                  <span className="section-label">TU ACTIVIDAD</span>
+                  <span className="section-label">
+                    <Icon name="sparkles" size={13} />
+                    TU ACTIVIDAD
+                  </span>
                   <strong>Un período, todas tus cuentas.</strong>
                 </div>
                 <div className="button-row">
@@ -1268,7 +1310,10 @@ export default function Home() {
                     <Icon name="wallet" />
                   </div>
                   <strong>{currency(totals.amount)}</strong>
-                  <small>Según tus registros y condiciones de pago</small>
+                  <small>
+                    <span className="metric-dot" /> Según tus registros y
+                    condiciones de pago
+                  </small>
                 </article>
                 <article>
                   <div>
