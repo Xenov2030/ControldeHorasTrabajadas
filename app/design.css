@@ -3647,3 +3647,58 @@ html[data-theme="dark"] .brand-mark--auto .brand-mark-dark,
   font-size: 10px;
   color: var(--accent);
 }
+
+.install-app {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 30;
+  max-width: min(340px, calc(100vw - 32px));
+}
+.install-app-button {
+  box-shadow: 0 8px 30px #171b3033;
+}
+.install-app > p {
+  background: var(--surface);
+  color: var(--ink);
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 12px;
+}
+body:has([aria-modal="true"]) .install-app {
+  visibility: hidden;
+}
+.install-help {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
+  padding: 24px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+.install-help::backdrop {
+  background: #0d1020aa;
+}
+.install-help li {
+  margin: 12px 0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.install-help p {
+  font-size: 12px;
+}
+.install-help .button-row {
+  flex-wrap: wrap;
+}
+@media (max-width: 860px) {
+  .install-app {
+    bottom: calc(86px + env(safe-area-inset-bottom));
+    right: 16px;
+  }
+}

@@ -2,8 +2,11 @@ import "@fontsource-variable/dm-sans";
 import "@fontsource-variable/manrope";
 import "./globals.css";
 import "./design.css";
+import InstallApp from "../components/install-app";
 export const metadata = {
   title: "JornadApp · Tu tiempo bien contado",
+  applicationName: "JornadApp",
+  appleWebApp: { capable: true, title: "JornadApp", statusBarStyle: "default" },
   icons: {
     icon: [
       {
@@ -38,7 +41,10 @@ export default function Layout({ children }) {
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <InstallApp />
+      </body>
     </html>
   );
 }

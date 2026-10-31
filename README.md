@@ -81,6 +81,8 @@ Vercel utiliza Next.js en la raíz del repositorio. La configuración de la base
 
 ## Funciones implementadas
 
+- Instalación como app web (PWA) con el reloj de JornadApp. Botón de instalación nativa cuando el navegador la ofrece, instrucciones para iPhone/iPad y alternativa por menú en Android. Se oculta en modo instalado y al recibir confirmación del navegador; recuerda esa instalación en el perfil del navegador y permite ocultarlo manualmente en iOS. La detección de una instalación previa depende del navegador: no es posible comprobarla universalmente entre perfiles, navegadores o tras borrar el almacenamiento. Una nueva oferta nativa permite reinstalar después de desinstalar. No incorpora soporte de inicio sin conexión ni notificaciones con la app cerrada.
+
 - Logo JornadApp con el lema «Tu tiempo bien contado», variantes para fondos claros y oscuros, e ícono de reloj en la pestaña.
 
 - Monotributo para Argentina: categorías A–K, cuota mensual opcional en ARS y fecha de vigencia. La cuota se informa por separado, sin descontarla automáticamente de sueldos ni duplicarla por trabajo o quincena. No se infieren categorías, topes de facturación ni importes de ARCA.

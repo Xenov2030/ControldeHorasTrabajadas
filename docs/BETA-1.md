@@ -31,6 +31,14 @@ El titular confirmó que el ingreso con Google funciona. La red del entorno de d
 4. Qué personas pueden ingresar con Google: en modo Testing, solo usuarios de prueba autorizados; para acceso general, revisar la publicación del cliente OAuth y los requisitos que indique Google.
 5. Si se ofrecerá ingreso por correo, comprobar SMTP, entrega de enlaces y cuotas de envío de Supabase.
 
+## Instalar en el celular
+
+La web incluye «Instalar JornadApp». En navegadores compatibles se abre la oferta de instalación; en iPhone/iPad se muestran los pasos de Safari → Compartir → Agregar a pantalla de inicio. El ícono es el reloj de JornadApp.
+
+El botón se oculta cuando el navegador confirma la instalación, cuando se abre en modo instalado o cuando una API compatible detecta la PWA existente. Esa confirmación se recuerda en el perfil del navegador. Safari no permite detectar todos los casos de instalación previa: se ofrece «Ya la instalé» para ocultarlo manualmente. No se puede detectar una instalación de forma universal entre navegadores o perfiles distintos.
+
+La instalación no agrega notificaciones con la app cerrada ni permite iniciar sin conexión. El manifiesto y los eventos de instalación se verificaron con pruebas de navegador; la instalación real y el ingreso con Google desde el ícono deben comprobarse también en los teléfonos de los participantes.
+
 ## Límites conocidos
 
 - Los importes son estimaciones. No se aplica legislación completa por país, ni convenios, impuestos, plus vacacional o saldo legal de vacaciones automáticamente.
