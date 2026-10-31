@@ -4,7 +4,22 @@ import "./globals.css";
 import "./design.css";
 export const metadata = {
   title: "JornadApp · Tu tiempo bien contado",
-  icons: { apple: "/icon.png" },
+  icons: {
+    icon: [
+      {
+        url: "/brand/favicon-32.png?v=clock-2",
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: "/brand/favicon-192.png?v=clock-2",
+        sizes: "192x192",
+        type: "image/png",
+      },
+    ],
+    shortcut: "/favicon.ico?v=clock-2",
+    apple: "/brand/favicon-180.png?v=clock-2",
+  },
   description:
     "Registrá tu jornada, calculá tus horas extra y organizá tus cobros. Hecho para tu forma de trabajar.",
 };
