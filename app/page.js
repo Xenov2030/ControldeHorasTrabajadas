@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import Icon from "../components/icon";
 import CreatorCredit from "../components/creator-credit";
+import WorkspaceGateway from "../components/workspace-gateway";
 import {
   checkCurrencyCorrection,
   CURRENCY_BACKUP_KEY,
@@ -776,6 +777,13 @@ function Payments({ state, onSave, today }) {
   );
 }
 export default function Home() {
+  return (
+    <WorkspaceGateway>
+      {(cloud) => <WorkspaceApp cloud={cloud} />}
+    </WorkspaceGateway>
+  );
+}
+function WorkspaceApp({ cloud = null }) {
   const [state, setState] = useState(null),
     [tab, setTab] = useState("Resumen"),
     [error, setError] = useState(""),
@@ -790,6 +798,8 @@ export default function Home() {
     [reminder, setReminder] = useState(null),
     [dismissed, setDismissed] = useState(""),
     [premium, setPremium] = useState(false);
+  const currencyBackupStorageKey =
+    cloud?.currencyBackupKey || CURRENCY_BACKUP_KEY;
   const localDate = (d) => dateInZone(d, zoneFor(state?.profile));
   const currency = (n) => formatCurrency(n, currencyFor(state?.profile));
   const modalRef = useRef(null),
@@ -797,13 +807,15 @@ export default function Home() {
   useEffect(() => {
     try {
       let next;
-      const raw = localStorage.getItem(STORAGE),
-        legacy = localStorage.getItem("jornada-v1");
-      next = raw
-        ? validateWorkspace(JSON.parse(raw))
-        : legacy
-          ? migrateLegacy(JSON.parse(legacy))
-          : createWorkspace();
+      const raw = cloud ? null : localStorage.getItem(STORAGE),
+        legacy = cloud ? null : localStorage.getItem("jornada-v1");
+      next = cloud
+        ? validateWorkspace(cloud.initialWorkspace)
+        : raw
+          ? validateWorkspace(JSON.parse(raw))
+          : legacy
+            ? migrateLegacy(JSON.parse(legacy))
+            : createWorkspace();
       setState(next);
       setShowSetup(!next.configured);
       setViewKind(next.cycle.kind);
@@ -899,9 +911,13 @@ export default function Home() {
         "Cerrá la jornada activa antes de cambiar la zona horaria.",
       );
     try {
-      if (saveCurrencyBackup)
-        localStorage.setItem(CURRENCY_BACKUP_KEY, JSON.stringify(state));
-      localStorage.setItem(STORAGE, JSON.stringify(next));
+      if (cloud)
+        cloud.save(next, { currencyBackup: saveCurrencyBackup ? state : null });
+      else {
+        if (saveCurrencyBackup)
+          localStorage.setItem(CURRENCY_BACKUP_KEY, JSON.stringify(state));
+        localStorage.setItem(STORAGE, JSON.stringify(next));
+      }
     } catch {
       throw new Error(
         "No se pudo guardar. Revisá el espacio disponible o los permisos del navegador.",
@@ -1089,6 +1105,7 @@ export default function Home() {
     return (
       <Setup
         state={state}
+        cloudEnabled={!!cloud}
         onSave={(next, options) => {
           commit(next, options);
           setViewKind(next.cycle.kind);
@@ -1149,7 +1166,11 @@ export default function Home() {
           </span>
           <div>
             <strong>{state.profile.name || "Mi espacio"}</strong>
-            <small>Plan gratuito · Versión local</small>
+            <small>
+              {cloud
+                ? "Beta · Cuenta personal"
+                : "Plan gratuito · Versión local"}
+            </small>
           </div>
         </div>
       </aside>
@@ -1166,7 +1187,11 @@ export default function Home() {
           <div className="header-actions">
             <span className="local-status">
               <i />
-              Datos en este navegador
+              {cloud
+                ? cloud.status === "synced"
+                  ? "Guardado en tu cuenta"
+                  : "Cambios pendientes"
+                : "Datos en este navegador"}
             </span>
             <label className="theme-control">
               <span className="sr-only">Apariencia</span>
@@ -1304,10 +1329,13 @@ export default function Home() {
                 setViewKind(next.cycle.kind);
               }}
               onBackup={backup}
+              currencyBackupStorageKey={currencyBackupStorageKey}
+              cloudEnabled={!!cloud}
+              onConflictBackup={cloud?.downloadConflict}
               onImport={restore}
               onCurrencyBackup={() => {
                 try {
-                  const raw = localStorage.getItem(CURRENCY_BACKUP_KEY);
+                  const raw = localStorage.getItem(currencyBackupStorageKey);
                   if (raw)
                     downloadFile(
                       raw,
@@ -1494,8 +1522,9 @@ export default function Home() {
                     <section className="privacy-card">
                       <Icon name="lock" size={17} />
                       <p>
-                        Tus registros quedan en este navegador. Google y la
-                        sincronización todavía no están conectados.{" "}
+                        {cloud
+                          ? "Tu cuenta sincroniza los registros. Revisá arriba si hay cambios pendientes antes de cerrar este dispositivo."
+                          : "Tus registros quedan en este navegador. El acceso con cuenta todavía no está configurado."}{" "}
                         <button className="text-button" onClick={backup}>
                           Guardar una copia
                         </button>
@@ -1547,7 +1576,8 @@ export default function Home() {
           <footer>
             <span>Hecho para que tu tiempo tenga valor.</span>
             <span>
-              {locationLabel(state.profile)} <i /> Versión en desarrollo
+              {locationLabel(state.profile)} <i />{" "}
+              {cloud ? "Beta" : "Versión en desarrollo"}
             </span>
             <CreatorCredit />
           </footer>

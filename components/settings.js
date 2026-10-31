@@ -24,6 +24,9 @@ export default function Settings({
   onBackup,
   onImport,
   onCurrencyBackup,
+  currencyBackupStorageKey = CURRENCY_BACKUP_KEY,
+  cloudEnabled = false,
+  onConflictBackup,
 }) {
   const currency = (n) => formatCurrency(n, currencyFor(state.profile));
   const [section, setSection] = useState(0),
@@ -41,9 +44,11 @@ export default function Settings({
     [hasCurrencyBackup, setHasCurrencyBackup] = useState(false);
   useEffect(() => {
     try {
-      setHasCurrencyBackup(Boolean(localStorage.getItem(CURRENCY_BACKUP_KEY)));
+      setHasCurrencyBackup(
+        Boolean(localStorage.getItem(currencyBackupStorageKey)),
+      );
     } catch {}
-  }, [state.profile.currency]);
+  }, [state.profile.currency, currencyBackupStorageKey]);
   useEffect(() => {
     setDraft((d) => ({
       ...d,
@@ -151,7 +156,9 @@ export default function Settings({
           )}
           {saved && (
             <div className="alert success" role="status">
-              Cambios guardados en este navegador.
+              {cloudEnabled
+                ? "Cambios guardados en este dispositivo. Revisá el estado de sincronización arriba."
+                : "Cambios guardados en este navegador."}
             </div>
           )}
           <div className="form-actions">
@@ -204,6 +211,11 @@ export default function Settings({
             {hasCurrencyBackup && (
               <button className="secondary" onClick={onCurrencyBackup}>
                 Descargar copia anterior al cambio de moneda
+              </button>
+            )}
+            {onConflictBackup && (
+              <button className="secondary" onClick={onConflictBackup}>
+                Descargar última copia de conflicto
               </button>
             )}
             <label className="secondary file-button">

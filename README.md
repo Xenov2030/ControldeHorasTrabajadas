@@ -1,6 +1,6 @@
 # Jornada · Control de horas trabajadas
 
-Aplicación Next.js en español para registrar jornadas y estimar ingresos con selección geográfica para Latinoamérica. La configuración original de Argentina y Mendoza se conserva para los perfiles existentes. La versión actual es personal y local: todavía no ofrece cuentas, base de datos remota ni servicios comerciales activos.
+Aplicación Next.js en español para registrar jornadas y estimar ingresos con selección geográfica para Latinoamérica. La configuración original de Argentina y Mendoza se conserva para los perfiles existentes. La aplicación mantiene el modo local y ahora incluye la integración de cuentas y almacenamiento con Supabase. Para activar la nube y lanzar la beta hace falta crear el proyecto alojado, ejecutar la migración y configurar Auth y las variables de Vercel. Guía: [docs/BETA.md](docs/BETA.md). Los servicios comerciales todavía no están activos.
 
 ## Desarrollo
 
@@ -47,6 +47,7 @@ Vercel puede detectar Next.js en la raíz. Este cambio no configura ni publica e
 - Catálogo local de 23 países y Puerto Rico como territorio, con 507 divisiones administrativas. Incluye los 20 países de América Latina y cobertura regional adicional para Belice, Guyana y Surinam. Cada país muestra provincia, estado, departamento, región o municipio según corresponda. Datos y licencia: [data/README.md](data/README.md).
 - Zona horaria IANA configurable por país: reloj, fecha de registro y recordatorios usan la selección; se evita asumir UTC-3 para toda Latinoamérica.
 - Moneda de registro editable. Cada país propone su moneda y la interfaz muestra códigos explícitos (ARS, MXN, BRL, etc.). Si ya hay datos financieros, corregir su moneda requiere confirmar que los valores ya estaban expresados en la nueva unidad: no se aplica ningún tipo de cambio. Se conserva una copia local del espacio anterior al último cambio, descargable desde Configuración. Para hacer conversiones reales hay que calcular y cargar los importes correspondientes; esta función solo corrige la unidad de registro.
+- Integración beta con Google y enlace de ingreso por correo mediante Supabase Auth, guardado por cuenta, migración local explícita, estado de sincronización y control de conflictos entre dispositivos. Requiere configuración externa; no se activa solo por subir el código.
 - Asistente inicial de cinco pasos: perfil, horario semanal, modalidad e importe, cierres y cobros, recordatorios.
 - Identidad visual azul noche, violeta y tonos cálidos, con fuentes locales, reloj de fichaje, resumen semanal y navegación propia para celular. Tema claro, oscuro o según el dispositivo, con preferencia persistida.
 - Importes, cantidades y horas aceptan coma o punto decimal; por ejemplo, `3500,50`, `3500.50` y `8,5`. También se aceptan miles con parte decimal explícita, como `1.234,50`; un único separador siempre se interpreta como decimal.
@@ -78,13 +79,13 @@ El SAC usa solo los meses cargados manualmente, no infiere una remuneración leg
 
 ## Persistencia y privacidad
 
-Los datos quedan en `localStorage` del navegador (`jornada-v2`). No hay sincronización entre dispositivos, autenticación ni aislamiento entre personas que comparten el mismo perfil del navegador. Borrar el almacenamiento elimina los registros locales. Conviene descargar copias JSON; el CSV es para consulta y no permite restaurar toda la configuración.
+Sin configurar Supabase, los datos siguen en `localStorage` (`jornada-v2`) y el modo local no tiene autenticación ni sincronización. Con Supabase configurado, se ingresa por cuenta, se guarda un documento por usuario en PostgreSQL y las copias pendientes se separan por identificador de cuenta. Los conflictos no se sobrescriben automáticamente. Borrar el almacenamiento elimina las copias que todavía no se sincronizaron. Conviene descargar copias JSON; el CSV es para consulta y no permite restaurar toda la configuración.
 
-La aplicación no sobrescribe datos que no puede validar. Los archivos de copia incluyen información personal y salarial: deben guardarse en un lugar privado. No se usan analítica, fuentes externas, proveedores de lectura de documentos ni servicios de mensajería en esta etapa.
+La aplicación no sobrescribe datos que no puede validar. El almacenamiento local no está cifrado; usá tu propio perfil del navegador para datos salariales. Los archivos de copia incluyen información personal y salarial: deben guardarse en un lugar privado. No se usan analítica, fuentes externas ni proveedores de lectura de documentos. Al activar la nube, Supabase gestiona la autenticación, la base de datos y los enlaces de ingreso por correo. WhatsApp sigue pendiente.
 
 ## Integraciones pendientes
 
-- Inicio de sesión con Google y base de datos con separación por cuenta.
+- Activar y verificar en el proyecto alojado la integración de Google y base de datos ya implementada: [docs/BETA.md](docs/BETA.md).
 - WhatsApp Business Platform, verificación de teléfono y registro por mensajes.
 - Notificaciones con la aplicación cerrada, autorización del dispositivo y servicio de programación.
 - Calendario oficial de feriados nacionales y de Mendoza.

@@ -592,7 +592,12 @@ export function ReminderFields({ value, onChange }) {
     </>
   );
 }
-export default function Setup({ state, onSave, onCancel }) {
+export default function Setup({
+  state,
+  onSave,
+  onCancel,
+  cloudEnabled = false,
+}) {
   const [draft, setDraft] = useState(() => structuredClone(state)),
     [step, setStep] = useState(0),
     [error, setError] = useState(""),
@@ -646,7 +651,9 @@ export default function Setup({ state, onSave, onCancel }) {
           <span>
             Sin recibos ni documentos.
             <br />
-            Por ahora, tus datos quedan en este navegador.
+            {cloudEnabled
+              ? "Tu espacio está vinculado a tu cuenta."
+              : "Por ahora, tus datos quedan en este navegador."}
           </span>
         </div>
       </div>
