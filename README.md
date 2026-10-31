@@ -1,6 +1,39 @@
 # Jornada · Control de horas trabajadas
 
-Aplicación Next.js en español para registrar jornadas y estimar ingresos con selección geográfica para Latinoamérica. La configuración original de Argentina y Mendoza se conserva para los perfiles existentes. La aplicación mantiene el modo local y ahora incluye la integración de cuentas y almacenamiento con Supabase. Para activar la nube y lanzar la beta hace falta crear el proyecto alojado, ejecutar la migración y configurar Auth y las variables de Vercel. Guía: [docs/BETA.md](docs/BETA.md). Los servicios comerciales todavía no están activos.
+Jornada ayuda a registrar el tiempo trabajado y entender cuánto se espera cobrar. Está pensada para trabajadores que necesitan llevar su propio control de jornadas, horas extra, faltas y pagos desde el celular o la computadora.
+
+**Sitio:** https://controldehorastrabajadas.vercel.app/
+
+**Creador:** [Nicolas Aguirres](https://nicolasaguirrescode.com/)
+
+El proyecto está en preparación de beta. El código incluye cuentas y almacenamiento con Supabase; su funcionamiento en producción se confirma después de configurar la base, Auth y Vercel siguiendo [la guía de activación](docs/BETA.md). Sin esa configuración se conserva el modo local. Los servicios comerciales todavía no están activos.
+
+## Presentación del producto
+
+La propuesta es que cada persona pueda comparar sus registros de trabajo con lo que cobra, incluso cuando su horario cambia según el día o cobra por hora con liquidaciones quincenales. La modalidad de pago, el período liquidado y la fecha de cobro se configuran por separado.
+
+- Registrá entrada y salida, o cargá las horas manualmente.
+- Configurá tu horario semanal y el valor de tus horas extra.
+- Llevá el registro de faltas, vacaciones, feriados y cobros.
+- Consultá estimaciones de ingresos y, para Argentina, del aguinaldo con base y extras cargadas manualmente.
+- Elegí país, división administrativa, moneda y zona horaria.
+- Usá tema claro u oscuro y descargá copias de tus registros.
+
+## Material para crear contenido
+
+**Descripción breve:** Jornada es una aplicación web para registrar horas trabajadas, estimar ingresos y llevar un control personal de jornadas y cobros.
+
+**Texto de presentación:** «¿Trabajás por hora pero cobrás por quincena? Con Jornada podés configurar tus horarios, registrar tus entradas y salidas y consultar una estimación de lo que te corresponde cobrar. También podés llevar tus horas extra, faltas y pagos en una interfaz adaptada al celular y la computadora».
+
+Ideas para publicaciones y demostraciones:
+
+- Un ejemplo de lunes a jueves con nueve horas, viernes con ocho y sábado libre.
+- Cómo separar el valor por hora de las fechas de cierre y cobro de cada quincena.
+- Cómo registrar una falta justificada y distinguir si fue paga o sin pago.
+- Cómo configurar un aumento con fecha de vigencia.
+- Un recorrido por los temas claro y oscuro en celular y PC.
+
+Para comunicar el estado actual, consultá las funciones y los límites detallados más abajo. El acceso real con Google y el guardado entre dispositivos requieren verificar la instalación alojada. WhatsApp, notificaciones con la aplicación cerrada, gestión de empresas y Premium son funciones previstas. La selección de país no adapta automáticamente las reglas laborales y los importes mostrados son estimaciones.
 
 ## Desarrollo
 
@@ -40,7 +73,7 @@ Para servir una compilación existente:
 npm start
 ```
 
-Vercel puede detectar Next.js en la raíz. Este cambio no configura ni publica el proyecto remoto.
+Vercel utiliza Next.js en la raíz del repositorio. La configuración de la base de datos y del acceso con cuentas se documenta en [docs/BETA.md](docs/BETA.md).
 
 ## Funciones implementadas
 
