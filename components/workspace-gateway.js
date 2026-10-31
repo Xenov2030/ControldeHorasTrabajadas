@@ -16,6 +16,7 @@ import {
 import { createWorkspace, migrateLegacy } from "../lib/workspace.mjs";
 import CreatorCredit from "./creator-credit";
 import BrandLogo from "./brand-logo";
+import { RELEASE } from "../lib/release.mjs";
 import Icon from "./icon";
 
 function download(value, name) {
@@ -118,7 +119,9 @@ function SignIn({ client }) {
   }
   return (
     <AccountFrame>
-      <span className="badge premium">BETA</span>
+      <span className="badge premium">
+        {RELEASE.label} · v{RELEASE.version}
+      </span>
       <h2>Tu espacio empieza acá.</h2>
       <p>
         Ingresá para guardar tus datos en tu cuenta y recuperarlos en otros

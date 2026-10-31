@@ -8,7 +8,9 @@ Jornadapp ayuda a registrar el tiempo trabajado y entender cuánto se espera cob
 
 **Creador:** [Nicolas Aguirres](https://nicolasaguirrescode.com/)
 
-El proyecto está en preparación de beta. El código incluye cuentas y almacenamiento con Supabase; su funcionamiento en producción se confirma después de configurar la base, Auth y Vercel siguiendo [la guía de activación](docs/BETA.md). Sin esa configuración se conserva el modo local. Los servicios comerciales todavía no están activos.
+**Primera beta: `0.1.0-beta.1`.** Orientada a pruebas de uso personal, con cuentas, varios trabajos y registro de horas e ingresos. Consultá las [notas de la Beta 1](docs/BETA-1.md) y [reportá problemas](https://github.com/Xenov2030/ControldeHorasTrabajadas/issues/new?template=bug_report.yml). No hay suscripciones ni cobros habilitados.
+
+La instalación alojada utiliza Supabase. Su configuración se documenta en [la guía de activación](docs/BETA.md); sin esas variables, la aplicación conserva el modo local. El titular confirmó el ingreso con Google durante la preparación. La verificación independiente del último despliegue y la prueba con cuentas reales en dos dispositivos quedan pendientes: la red de este entorno bloquea Vercel. El acceso general depende del estado de publicación del cliente OAuth de Google y de la configuración de correo de Supabase.
 
 ## Presentación del producto
 
@@ -129,7 +131,7 @@ La aplicación no sobrescribe datos que no puede validar. El almacenamiento loca
 
 ## Integraciones pendientes
 
-- Activar y verificar en el proyecto alojado la integración de Google y base de datos ya implementada: [docs/BETA.md](docs/BETA.md).
+- Completar la comprobación del despliegue de Beta 1 con dos cuentas reales y dos dispositivos, y confirmar el público habilitado en Google: [docs/BETA-1.md](docs/BETA-1.md).
 - WhatsApp Business Platform, verificación de teléfono y registro por mensajes.
 - Notificaciones con la aplicación cerrada, autorización del dispositivo y servicio de programación.
 - Calendario oficial de feriados nacionales y de Mendoza.

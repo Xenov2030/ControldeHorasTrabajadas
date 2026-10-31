@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import BrandLogo from "../components/brand-logo";
+import { RELEASE } from "../lib/release.mjs";
 import Icon from "../components/icon";
 import CreatorCredit from "../components/creator-credit";
 import WorkspaceGateway from "../components/workspace-gateway";
@@ -1218,7 +1219,7 @@ function WorkspaceApp({ cloud = null }) {
             <strong>{state.profile.name || "Mi espacio"}</strong>
             <small>
               {cloud
-                ? "Beta · Cuenta personal"
+                ? `${RELEASE.label} · Cuenta personal`
                 : "Plan gratuito · Versión local"}
             </small>
           </div>
@@ -1688,9 +1689,17 @@ function WorkspaceApp({ cloud = null }) {
           <footer>
             <span>Hecho para que tu tiempo tenga valor.</span>
             <span>
-              {locationLabel(state.profile)} <i />{" "}
-              {cloud ? "Beta" : "Versión en desarrollo"}
+              {locationLabel(state.profile)} <i /> {RELEASE.label} · v
+              {RELEASE.version}
+              {cloud ? "" : " · Modo local"}
             </span>
+            <a
+              href={RELEASE.feedbackUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Reportar un problema
+            </a>
             <CreatorCredit />
           </footer>
         </div>

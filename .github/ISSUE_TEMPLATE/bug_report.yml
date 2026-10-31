@@ -1,0 +1,38 @@
+name: Problema en JornadApp
+description: Informar un error encontrado durante la beta.
+title: "[Beta] "
+body:
+  - type: markdown
+    attributes:
+      value: "Gracias por probar JornadApp. Este reporte puede ser público: usá datos ficticios y no incluyas sueldos personales, correos, claves ni tokens."
+  - type: input
+    id: version
+    attributes:
+      label: Versión de la aplicación
+      description: Aparece al pie de la aplicación.
+      placeholder: 0.1.0-beta.1
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para reproducir el problema
+      placeholder: "1. Abrí…\n2. Seleccioné…\n3. Ocurrió…"
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Qué esperabas y qué ocurrió
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Dispositivo y navegador
+      placeholder: Celular Android, Chrome; PC Windows, Firefox…
+  - type: textarea
+    id: details
+    attributes:
+      label: Mensaje de error o detalles adicionales
+      description: Si agregás una captura, ocultá todos tus datos personales y salariales.
