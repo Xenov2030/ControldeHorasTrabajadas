@@ -78,7 +78,8 @@ export default function Sac({ state, onSave, today }) {
             Cargá la remuneración computable de cada mes y sus extras, sin
             duplicarlas. Usamos la mitad del mejor total mensual del semestre,
             proporcional por fecha de ingreso. No es una liquidación legal ni
-            una lectura de recibos.
+            una lectura de recibos. Esta estimación del SAC no descuenta los
+            aportes configurados para tus jornadas.
           </p>
         </div>
       </div>

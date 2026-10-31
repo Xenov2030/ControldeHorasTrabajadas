@@ -693,8 +693,16 @@ function Payments({ state, onSave, today }) {
           <p>Cobro programado: {dateLabel(due)}</p>
           <div className="breakdown">
             <div>
-              <span>Generado / proyectado</span>
+              <span>Antes de aportes configurados</span>
               <strong>{currency(total.amount)}</strong>
+            </div>
+            <div>
+              <span>Aportes y retenciones estimados</span>
+              <strong>− {currency(total.payrollDeductionAmount)}</strong>
+            </div>
+            <div>
+              <span>A cobrar estimado</span>
+              <strong>{currency(total.netAmount)}</strong>
             </div>
             <div>
               <span>Cobrado registrado</span>
@@ -702,7 +710,7 @@ function Payments({ state, onSave, today }) {
             </div>
             <div>
               <span>Diferencia estimada</span>
-              <strong>{currency(total.amount - received)}</strong>
+              <strong>{currency(total.netAmount - received)}</strong>
             </div>
           </div>
           <form key={start} onSubmit={submit}>
@@ -981,7 +989,7 @@ function WorkspaceApp({ cloud = null }) {
   candidates.sort((a, b) => a.date.localeCompare(b.date));
   const nextPay = candidates[0],
     nextAmount = nextPay
-      ? periodTotals(state, nextPay.start, nextPay.end).amount
+      ? periodTotals(state, nextPay.start, nextPay.end).netAmount
       : 0;
   function add(entry, close) {
     if (entry.date > today) throw new Error("No podés guardar trabajo futuro.");
@@ -1403,13 +1411,48 @@ function WorkspaceApp({ cloud = null }) {
                   </button>
                 </div>
               </div>
+              <section
+                className="panel settings-panel"
+                aria-label="Detalle del importe a cobrar"
+              >
+                <h2>Del importe calculado al bolsillo</h2>
+                <div className="breakdown">
+                  <div>
+                    <span>Calculado antes de aportes configurados</span>
+                    <strong>{currency(totals.amount)}</strong>
+                  </div>
+                  <div>
+                    <span>Aportes y retenciones estimados</span>
+                    <strong>− {currency(totals.payrollDeductionAmount)}</strong>
+                  </div>
+                  <div>
+                    <span>A cobrar estimado</span>
+                    <strong>{currency(totals.netAmount)}</strong>
+                  </div>
+                </div>
+                <p>
+                  La condición de cada fecha define los descuentos. Los importes
+                  ingresados como netos y las partes no registradas no vuelven a
+                  descontarse. Si no configuraste un porcentaje, no se aplican
+                  aportes. Los descuentos por faltas ya están incluidos en el
+                  importe calculado.
+                </p>
+                <button
+                  className="text-button"
+                  onClick={() => setTab("Configuración")}
+                >
+                  Revisar condición laboral y descuentos
+                </button>
+              </section>
               <div className="metrics">
                 <article className="income">
                   <div>
-                    <span>Ingreso estimado · {currencyFor(state.profile)}</span>
+                    <span>
+                      A cobrar estimado · {currencyFor(state.profile)}
+                    </span>
                     <Icon name="wallet" />
                   </div>
-                  <strong>{currency(totals.amount)}</strong>
+                  <strong>{currency(totals.netAmount)}</strong>
                   <small>
                     <span className="metric-dot" /> Según tus registros y
                     condiciones de pago
@@ -1441,7 +1484,7 @@ function WorkspaceApp({ cloud = null }) {
                   <small>
                     {current.mode === "piecework"
                       ? "Sin importe extra automático"
-                      : `${currency(totals.extraAmount)} estimados en extras`}
+                      : `${currency(totals.extraAmount)} en extras, antes de aportes configurados`}
                   </small>
                 </article>
                 <article>
@@ -1587,8 +1630,9 @@ function WorkspaceApp({ cloud = null }) {
                 <div>
                   <strong>Las reglas las elegís vos.</strong>
                   <p>
-                    Los feriados se marcan manualmente. No incluimos descuentos,
-                    aportes ni convenios automáticos.{" "}
+                    Los feriados se marcan manualmente. Los aportes se estiman
+                    únicamente con tus porcentajes; no aplicamos convenios ni
+                    impuestos automáticos.{" "}
                     {["monthly", "fortnightly"].includes(current.mode)
                       ? "El sueldo fijo es una proyección por días calendario. "
                       : ""}

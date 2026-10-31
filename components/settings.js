@@ -15,6 +15,7 @@ import {
   PAY_MODES,
 } from "../lib/workspace.mjs";
 import Icon from "./icon";
+import { EMPLOYMENT_TYPES, employmentSettings } from "../lib/employment.mjs";
 import CurrencyConfirmation from "./currency-confirmation";
 import { CURRENCY_BACKUP_KEY } from "../lib/currency-change.mjs";
 import { currencyFor, zoneFor, locationLabel } from "../lib/locations.mjs";
@@ -183,7 +184,18 @@ export default function Settings({
                 <div className="history-row" key={v.id}>
                   <span>
                     <strong>{currency(v.amount)}</strong>
-                    <small>{PAY_MODES[v.mode]}</small>
+                    <small>
+                      {PAY_MODES[v.mode]} ·{" "}
+                      {EMPLOYMENT_TYPES[employmentSettings(v).type]} ·{" "}
+                      {employmentSettings(v).basis === "net"
+                        ? "Neto ingresado"
+                        : "Bruto ingresado"}{" "}
+                      ·{" "}
+                      {employmentSettings(v).basis === "gross" &&
+                      employmentSettings(v).share > 0
+                        ? `Aportes ${employmentSettings(v).rate}% sobre ${employmentSettings(v).share}%${employmentSettings(v).extras ? ", incluidas extras" : ", sin extras"}`
+                        : "Sin nuevos aportes"}
+                    </small>
                   </span>
                   <span>
                     {v.effectiveFrom === "1900-01-01"

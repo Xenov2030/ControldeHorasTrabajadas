@@ -77,6 +77,7 @@ Vercel utiliza Next.js en la raíz del repositorio. La configuración de la base
 
 ## Funciones implementadas
 
+- Condición laboral por trabajo y fecha de vigencia: registrado, no registrado o mixto. Permite indicar importes brutos o netos y un porcentaje manual de aportes/retenciones sobre la parte registrada, con opción de excluir las horas extra. Los importes netos no se descuentan otra vez. El resumen y los cobros muestran el importe antes de aportes, los descuentos configurados y el monto estimado a cobrar. Las condiciones anteriores sin configurar conservan sus importes.
 - Hasta diez trabajos por cuenta, con nombre, horarios, sueldos, jornadas, faltas, cobros y SAC separados. Selector para cambiar de trabajo y renombrarlo; los datos anteriores se conservan como «Mi trabajo». Los resúmenes, CSV y recordatorios corresponden al trabajo seleccionado. La copia JSON y la sincronización incluyen todos los trabajos. No hay todavía un resumen combinado.
 
 - Catálogo local de 23 países y Puerto Rico como territorio, con 507 divisiones administrativas. Incluye los 20 países de América Latina y cobertura regional adicional para Belice, Guyana y Surinam. Cada país muestra provincia, estado, departamento, región o municipio según corresponda. Datos y licencia: [data/README.md](data/README.md).
@@ -100,9 +101,9 @@ Vercel utiliza Next.js en la raíz del repositorio. La configuración de la base
 
 ## Cálculos y límites actuales
 
-La selección geográfica no aplica automáticamente legislación o feriados del país. El aguinaldo disponible sigue siendo el SAC argentino y su pantalla no ejecuta esa fórmula en países distintos de Argentina. Los valores iniciales son ejemplos editables. No se cargan ni analizan recibos de sueldo. Los resultados son estimaciones, no liquidaciones legales ni importes netos confirmados.
+La selección geográfica no aplica automáticamente legislación o feriados del país. El aguinaldo disponible sigue siendo el SAC argentino y su pantalla no ejecuta esa fórmula en países distintos de Argentina. Los valores iniciales son ejemplos editables. No se cargan ni analizan recibos de sueldo. Los resultados son estimaciones, no liquidaciones legales ni importes netos confirmados. La condición laboral y los porcentajes no se deducen automáticamente del país. En modo mixto se aplica el mismo porcentaje de parte registrada a la base y, si se habilita, a las extras; no se modelan distintos valores hora bruto/neto en una misma condición. El cálculo manual de SAC no aplica estos descuentos.
 
-Las horas extra se calculan según el excedente diario del horario pactado, con un multiplicador por condición salarial. No se aplican automáticamente límites semanales, convenios, recargos nocturnos, distintos recargos según horario ni descuentos, aportes o retenciones. Los feriados son manuales y usan su propio multiplicador, sin acumular extras.
+Las horas extra se calculan según el excedente diario del horario pactado, con un multiplicador por condición salarial. No se aplican automáticamente límites semanales, convenios, recargos nocturnos, distintos recargos según horario ni descuentos o impuestos legales automáticos. Los aportes y retenciones se estiman solo con el porcentaje manual configurado, sin topes, escalas ni mínimos legales. Los feriados son manuales y usan su propio multiplicador, sin acumular extras.
 
 Por jornada, el importe se divide por las horas incluidas que informa el usuario para estimar fracciones y extras. Los salarios fijos se proyectan por días calendario, incluso antes de cargar asistencia: no se descuentan vacaciones sin pago ni ausencias automáticamente. Los descuentos de faltas con sueldo fijo solo se aplican por el importe manual indicado en cada registro. Para extras y recargos de feriados con sueldo fijo se pide un valor hora explícito. Al tanto, se calcula cantidad por precio sin agregar importes extra automáticos.
 

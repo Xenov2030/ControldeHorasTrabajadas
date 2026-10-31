@@ -3,6 +3,7 @@ import { useState } from "react";
 import { DAYS, PAY_MODES, scheduleHours } from "../lib/workspace.mjs";
 import Icon from "./icon";
 import DecimalInput from "./decimal-input";
+import EmploymentFields from "./employment-fields";
 import {
   COUNTRIES,
   CURRENCIES,
@@ -308,7 +309,7 @@ export function SalaryFields({
         <small>
           {value.mode === "piecework"
             ? "Precio por unidad terminada."
-            : `Importe ${PAY_MODES[value.mode].toLowerCase()}. Cargá el valor que querés usar en la estimación.`}
+            : `Importe ${PAY_MODES[value.mode].toLowerCase()}. Indicá abajo si este valor es bruto o de bolsillo.`}
         </small>
       </label>
       {value.mode === "daily" && (
@@ -390,6 +391,7 @@ export function SalaryFields({
           )}
         </>
       )}
+      <EmploymentFields value={value} onChange={onChange} />
       {!initial && (
         <label>
           Vigente desde
@@ -408,7 +410,7 @@ export function SalaryFields({
           {value.mode === "piecework"
             ? "Al tanto: ingresos = cantidad × precio. Registramos las horas, pero no sumamos extras automáticamente."
             : ["monthly", "fortnightly"].includes(value.mode)
-              ? "El sueldo fijo se proyecta por días calendario. Es una estimación; no descuenta ausencias ni calcula aportes."
+              ? "El sueldo fijo se proyecta por días calendario. Las ausencias se descuentan por el importe manual registrado; los aportes se estiman según la configuración que elijas."
               : "Las extras se calculan sobre el horario pactado. Los feriados usan su propio multiplicador, sin acumular extras."}
         </span>
       </div>
