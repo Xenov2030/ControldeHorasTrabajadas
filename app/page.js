@@ -19,6 +19,7 @@ import DecimalInput from "../components/decimal-input";
 import { parseDecimal } from "../lib/decimal.mjs";
 import Setup from "../components/setup";
 import JobSwitcher from "../components/job-switcher";
+import MonotributoNote from "../components/monotributo-note";
 import { addJob, switchJob, renameJob, jobId } from "../lib/jobs.mjs";
 import Settings from "../components/settings";
 import Sac from "../components/sac";
@@ -677,6 +678,7 @@ function Payments({ state, onSave, today }) {
           </p>
         </div>
       </div>
+      <MonotributoNote state={state} start={start} end={end} />
       <div className="payment-layout">
         <section className="panel settings-panel">
           <label className="short-field">
@@ -1444,6 +1446,11 @@ function WorkspaceApp({ cloud = null }) {
                   Revisar condición laboral y descuentos
                 </button>
               </section>
+              <MonotributoNote
+                state={state}
+                start={periodStart}
+                end={periodEnd}
+              />
               <div className="metrics">
                 <article className="income">
                   <div>

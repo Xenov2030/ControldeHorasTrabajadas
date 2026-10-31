@@ -1,8 +1,16 @@
 "use client";
 import DecimalInput from "./decimal-input";
-import { EMPLOYMENT_TYPES, employmentSettings } from "../lib/employment.mjs";
+import {
+  EMPLOYMENT_TYPES,
+  MONOTRIBUTO_CATEGORIES,
+  employmentSettings,
+} from "../lib/employment.mjs";
 
-export default function EmploymentFields({ value, onChange }) {
+export default function EmploymentFields({
+  value,
+  onChange,
+  countryCode = "AR",
+}) {
   const settings = employmentSettings(value);
   const set = (key, next) => onChange({ ...value, [key]: next });
   const registered = ["registered", "mixed"].includes(settings.type);
@@ -22,13 +30,62 @@ export default function EmploymentFields({ value, onChange }) {
             value={settings.type}
             onChange={(e) => set("employmentType", e.target.value)}
           >
-            {Object.entries(EMPLOYMENT_TYPES).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
+            {Object.entries(EMPLOYMENT_TYPES)
+              .filter(
+                ([key]) =>
+                  key !== "monotributo" ||
+                  countryCode === "AR" ||
+                  settings.type === "monotributo",
+              )
+              .map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
           </select>
         </label>
+        {settings.type === "monotributo" && (
+          <>
+            <label>
+              Categoría de monotributo
+              <select
+                required
+                value={value.monotributoCategory || ""}
+                onChange={(e) => set("monotributoCategory", e.target.value)}
+              >
+                <option value="" disabled>
+                  Elegí tu categoría
+                </option>
+                {MONOTRIBUTO_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    Categoría {category}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Cuota mensual de monotributo (ARS) · opcional
+              <DecimalInput
+                value={value.monotributoMonthlyFee}
+                min="0"
+                max="1000000000000"
+                onValueChange={(n) => set("monotributoMonthlyFee", n)}
+              />
+              <small>
+                Ingresá la cuota vigente que pagás. No usamos una tabla de
+                importes automática.
+              </small>
+            </label>
+            <p className="wide">
+              La categoría y la cuota corresponden a tu situación como
+              contribuyente. La cuota se muestra como referencia y no se
+              descuenta del sueldo, de cada quincena ni una vez por trabajo. Si
+              facturás por varios trabajos, no la sumes repetidamente. No
+              estimamos la categoría ni la recategorización a partir de tus
+              horas.
+            </p>
+          </>
+        )}
         <label>
           El importe que ingresás es
           <select

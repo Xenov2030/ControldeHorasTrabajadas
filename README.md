@@ -77,6 +77,7 @@ Vercel utiliza Next.js en la raíz del repositorio. La configuración de la base
 
 ## Funciones implementadas
 
+- Monotributo para Argentina: categorías A–K, cuota mensual opcional en ARS y fecha de vigencia. La cuota se informa por separado, sin descontarla automáticamente de sueldos ni duplicarla por trabajo o quincena. No se infieren categorías, topes de facturación ni importes de ARCA.
 - Condición laboral por trabajo y fecha de vigencia: registrado, no registrado o mixto. Permite indicar importes brutos o netos y un porcentaje manual de aportes/retenciones sobre la parte registrada, con opción de excluir las horas extra. Los importes netos no se descuentan otra vez. El resumen y los cobros muestran el importe antes de aportes, los descuentos configurados y el monto estimado a cobrar. Las condiciones anteriores sin configurar conservan sus importes.
 - Hasta diez trabajos por cuenta, con nombre, horarios, sueldos, jornadas, faltas, cobros y SAC separados. Selector para cambiar de trabajo y renombrarlo; los datos anteriores se conservan como «Mi trabajo». Los resúmenes, CSV y recordatorios corresponden al trabajo seleccionado. La copia JSON y la sincronización incluyen todos los trabajos. No hay todavía un resumen combinado.
 

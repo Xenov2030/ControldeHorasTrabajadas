@@ -144,3 +144,57 @@ test("invalid imported employment settings fail validation", () => {
     assert.throws(() => validateWorkspace(fixture(patch)));
   }
 });
+
+test("monotributo registra categoría y cuota sin retenerla de cada trabajo o período", () => {
+  const s = fixture({
+    employmentType: "monotributo",
+    monotributoCategory: "K",
+    monotributoMonthlyFee: 50000.5,
+  });
+  validateWorkspace(s);
+  const result = totals(s);
+  assert.equal(result.payrollDeductionAmount, 0);
+  assert.equal(result.netAmount, result.amount);
+  assert.equal(
+    totals(JSON.parse(JSON.stringify(s))).netAmount,
+    result.netAmount,
+  );
+  for (const patch of [
+    { monotributoCategory: "L" },
+    { monotributoCategory: undefined },
+    { monotributoMonthlyFee: -1 },
+    { monotributoMonthlyFee: "5000" },
+  ]) {
+    assert.throws(() =>
+      validateWorkspace(fixture({ ...s.compensation[0], ...patch })),
+    );
+  }
+});
+test("monotributo conserva categorías vigentes al consultar períodos anteriores", async () => {
+  const { monotributoConditions } = await import("../lib/employment.mjs");
+  const s = fixture({
+    employmentType: "monotributo",
+    monotributoCategory: "A",
+  });
+  s.compensation.push({
+    ...s.compensation[0],
+    id: "category-c",
+    effectiveFrom: "2026-10-10",
+    monotributoCategory: "C",
+  });
+  s.compensation.push({
+    ...s.compensation[0],
+    id: "registered",
+    effectiveFrom: "2026-11-01",
+    employmentType: "registered",
+  });
+  validateWorkspace(s);
+  const categories = (a, b) =>
+    monotributoConditions(s.compensation, a, b).map(
+      (v) => v.monotributoCategory,
+    );
+  assert.deepEqual(categories("2026-10-01", "2026-10-09"), ["A"]);
+  assert.deepEqual(categories("2026-10-10", "2026-10-15"), ["C"]);
+  assert.deepEqual(categories("2026-10-01", "2026-10-15"), ["A", "C"]);
+  assert.deepEqual(categories("2026-11-01", "2026-11-15"), []);
+});

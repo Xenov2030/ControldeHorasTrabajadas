@@ -275,6 +275,7 @@ export function SalaryFields({
   onChange,
   initial = false,
   currencyCode = "ARS",
+  countryCode = "AR",
 }) {
   const set = (key, v) => onChange({ ...value, [key]: v });
   return (
@@ -391,7 +392,11 @@ export function SalaryFields({
           )}
         </>
       )}
-      <EmploymentFields value={value} onChange={onChange} />
+      <EmploymentFields
+        value={value}
+        onChange={onChange}
+        countryCode={countryCode}
+      />
       {!initial && (
         <label>
           Vigente desde
@@ -710,6 +715,7 @@ export default function Setup({
             <SalaryFields
               initial
               currencyCode={currencyFor(draft.profile)}
+              countryCode={draft.profile.country || "AR"}
               value={draft.compensation[0]}
               onChange={(v) =>
                 set("compensation", [v, ...draft.compensation.slice(1)])

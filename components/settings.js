@@ -130,6 +130,7 @@ export default function Settings({
               value={salary}
               onChange={setSalary}
               currencyCode={currencyFor(state.profile)}
+              countryCode={state.profile.country || "AR"}
             />
           ) : section === 3 ? (
             <CycleFields
@@ -186,7 +187,11 @@ export default function Settings({
                     <strong>{currency(v.amount)}</strong>
                     <small>
                       {PAY_MODES[v.mode]} ·{" "}
-                      {EMPLOYMENT_TYPES[employmentSettings(v).type]} ·{" "}
+                      {EMPLOYMENT_TYPES[employmentSettings(v).type]}
+                      {v.employmentType === "monotributo"
+                        ? ` · Categoría ${v.monotributoCategory}${v.monotributoMonthlyFee !== undefined ? ` · Cuota mensual ${formatCurrency(v.monotributoMonthlyFee, "ARS")} (referencia)` : ""}`
+                        : ""}{" "}
+                      ·{" "}
                       {employmentSettings(v).basis === "net"
                         ? "Neto ingresado"
                         : "Bruto ingresado"}{" "}
