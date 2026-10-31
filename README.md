@@ -95,4 +95,4 @@ La pantalla Premium informa qué funciones están previstas y no activa pagos ni
 
 ## Crédito del creador
 
-El componente `CreatorCredit` está preparado para mostrar una firma discreta con enlace al portfolio en el pie del panel y en la configuración inicial. Su identidad pública se define en `lib/branding.mjs`. La firma actual es «Hecho por Nicolás» y enlaza a https://nicolasaguirrescode.com/. El enlace utiliza HTTPS y abre el portfolio en una pestaña nueva.
+El componente `CreatorCredit` está preparado para mostrar una firma discreta con enlace al portfolio en el pie del panel y en la configuración inicial. Su identidad pública se define en `lib/branding.mjs`. La firma actual es «Hecho por Nicolas Aguirres» y enlaza a https://nicolasaguirrescode.com/. El enlace utiliza HTTPS y abre el portfolio en una pestaña nueva.

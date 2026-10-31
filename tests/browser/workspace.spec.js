@@ -661,7 +661,7 @@ test("firma del creador apunta al portfolio en bienvenida y panel, también en c
 }) => {
   await page.goto("/");
   let credit = page.getByRole("link", {
-    name: "Portfolio de Nicolás (abre en otra pestaña)",
+    name: "Portfolio de Nicolas Aguirres (abre en otra pestaña)",
     exact: true,
   });
   await credit.waitFor();
@@ -684,7 +684,7 @@ test("firma del creador apunta al portfolio en bienvenida y panel, también en c
     .getByRole("heading", { name: "Tu esfuerzo, en números." })
     .waitFor();
   credit = page.getByRole("link", {
-    name: "Portfolio de Nicolás (abre en otra pestaña)",
+    name: "Portfolio de Nicolas Aguirres (abre en otra pestaña)",
     exact: true,
   });
   assert.equal(await credit.isVisible(), true);
